@@ -240,6 +240,124 @@ function stopRotator() {
   rotatorTimer = null;
 }
 
+// ---------- pricing ----------
+// Hourly rates (USD) used by the team builder. Package prices below are built from them.
+const ROLE_RATES = [
+  ['Full-stack developer', 50], ['Mobile developer', 55], ['AI engineer', 70], ['Cybersecurity expert', 75],
+  ['Cloud & DevOps engineer', 65], ['UI/UX designer', 45], ['QA tester', 35], ['Tech consultant', 60],
+];
+const MAX_TEAM = 5; // the most developers a job can have
+const usd = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
+
+// [name, price, unit, summary, prefill for the job form]
+const PACKAGES = [
+  ['Quick fix', '$50', '/hour', 'One developer for a fix or a small task.',
+    { description: 'I need one developer for a quick fix: ', teamSize: 1 }],
+  ['Site Care', '$199', '/month', 'Updates, backups, security checks and 4 hours of fixes.',
+    { description: 'Monthly site care for my website: updates, backups, security checks and fixes.', teamSize: 1 }],
+  ['Launch', 'From $6,000', '', 'An MVP built by 2 developers in 4 weeks.',
+    { description: 'Build an MVP of my product with a team of 2 developers in about 4 weeks.', teamSize: 2, estimateHours: 120, budget: 6000 }],
+  ['Product team', 'From $12,000', '/month', '3 developers, part-time, on your deadline.',
+    { description: 'A product team of 3 developers, part-time, to build and grow my product.', teamSize: 3, estimateHours: 240, budget: 12000 }],
+];
+
+function pricingSection() {
+  return `
+    <section class="section" id="pricing">
+      <h2>Packages</h2>
+      <div class="packages">
+        ${PACKAGES.map(([name, price, unit, summary], i) => `
+          <div class="card plan ${i === 3 ? 'featured' : ''}">
+            <h3>${name}</h3>
+            <div class="price">${price}<small>${unit}</small></div>
+            <p>${summary}</p>
+            <button type="button" class="btn ${i === 3 ? 'light' : ''}" data-package="${i}">Get started</button>
+          </div>`).join('')}
+      </div>
+
+      <div class="builder card" id="builder">
+        <div class="builder-roles">
+          <h3>Assemble your team</h3>
+          <ul>
+            ${ROLE_RATES.map(([role, rate], i) => `
+              <li>
+                <span class="builder-role">${role}<small>${usd(rate)}/hour</small></span>
+                <span class="stepper">
+                  <button type="button" data-step="-1" data-role="${i}" aria-label="Remove a ${role}">&minus;</button>
+                  <output id="count-${i}">0</output>
+                  <button type="button" data-step="1" data-role="${i}" aria-label="Add a ${role}">+</button>
+                </span>
+              </li>`).join('')}
+          </ul>
+        </div>
+        <div class="builder-summary">
+          <label for="b-hours">Hours per week, each</label>
+          <select id="b-hours">${[10, 20, 30, 40].map((h) => `<option value="${h}" ${h === 20 ? 'selected' : ''}>${h} hours</option>`).join('')}</select>
+          <label for="b-weeks">For how long</label>
+          <select id="b-weeks">${[1, 2, 4, 8, 12, 26].map((w) => `<option value="${w}" ${w === 4 ? 'selected' : ''}>${w} week${w > 1 ? 's' : ''}</option>`).join('')}</select>
+          <div class="builder-total">
+            <span id="b-team">Add people to your team</span>
+            <b id="b-price">${usd(0)}</b>
+            <span id="b-week" class="hint"></span>
+          </div>
+          <button type="button" class="btn primary caps" id="b-go" disabled>Build this team</button>
+          <p class="hint">Estimate only. You agree the final price with your team.</p>
+        </div>
+      </div>
+    </section>`;
+}
+
+/** Saves a job-form prefill and goes to the job form (via sign-up when signed out). */
+function startJob(prefill) {
+  sessionStorage.setItem('tx_prefill', JSON.stringify(prefill));
+  if (!state.user) {
+    sessionStorage.setItem('tx_next', '#/new');
+    toast('Create a free account to meet your team');
+    go('#/signup?role=client');
+  } else if (state.user.role !== 'client') toast('Sign in with a client account to hire a team');
+  else go('#/new');
+}
+
+function bindPricing() {
+  app.querySelectorAll('[data-package]').forEach((b) => b.addEventListener('click', () => startJob(PACKAGES[b.dataset.package][4])));
+
+  const counts = ROLE_RATES.map(() => 0);
+  const hours = document.getElementById('b-hours');
+  const weeks = document.getElementById('b-weeks');
+  const update = () => {
+    const people = counts.reduce((a, b) => a + b, 0);
+    const weekly = counts.reduce((sum, n, i) => sum + n * ROLE_RATES[i][1] * Number(hours.value), 0);
+    counts.forEach((n, i) => { document.getElementById(`count-${i}`).textContent = n; });
+    app.querySelectorAll('[data-step="1"]').forEach((b) => { b.disabled = people >= MAX_TEAM; });
+    app.querySelectorAll('[data-step="-1"]').forEach((b) => { b.disabled = counts[b.dataset.role] === 0; });
+    document.getElementById('b-team').textContent = people
+      ? `Team of ${people}${people >= MAX_TEAM ? ' (maximum)' : ''}`
+      : 'Add people to your team';
+    document.getElementById('b-price').textContent = usd(weekly * Number(weeks.value));
+    document.getElementById('b-week').textContent = people ? `${usd(weekly)} per week` : '';
+    document.getElementById('b-go').disabled = !people;
+    return { people, weekly };
+  };
+  app.querySelectorAll('[data-step]').forEach((b) => b.addEventListener('click', () => {
+    const i = Number(b.dataset.role);
+    counts[i] = Math.max(0, counts[i] + Number(b.dataset.step));
+    update();
+  }));
+  hours.addEventListener('change', update);
+  weeks.addEventListener('change', update);
+  document.getElementById('b-go').addEventListener('click', () => {
+    const { people, weekly } = update();
+    const roles = counts.map((n, i) => n && `${n} ${ROLE_RATES[i][0]}${n > 1 ? 's' : ''}`).filter(Boolean);
+    startJob({
+      description: `I'd like a team of ${roles.join(', ')}, about ${hours.value} hours a week each for ${weeks.value} week${weeks.value > 1 ? 's' : ''}.`,
+      teamSize: people,
+      estimateHours: people * Number(hours.value) * Number(weeks.value),
+      budget: weekly * Number(weeks.value),
+    });
+  });
+  update();
+}
+
 async function viewHome() {
   const stats = await load('/stats');
   const hireHref = state.user?.role === 'developer' ? '#/dashboard' : '#/new';
@@ -285,24 +403,18 @@ async function viewHome() {
       <div class="role-photos wide">${ROLE_PHOTOS_WIDE.map((r) => rolePhoto(r, 1200, 750)).join('')}</div>
     </section>
 
-    <section class="how bleed" id="how">
-      <h2>Three simple steps</h2>
-      <ol class="how-steps">
-        <li><span class="how-num">01</span><h3>Share your idea</h3></li>
-        <li><span class="how-num">02</span><h3>Meet your team</h3></li>
-        <li><span class="how-num">03</span><h3>Launch on time</h3></li>
-      </ol>
-      <div class="how-cta"><a class="btn primary caps" href="${hireHref}">Start my project</a></div>
+    <section class="how-line bleed" id="how">
+      <p class="how-kicker">How it works</p>
+      <p class="how-statement">
+        <span><sup>i</sup>Share your idea.</span>
+        <span><sup>ii</sup><em>Meet your team.</em></span>
+        <span><sup>iii</sup><em>Launch on time.</em></span>
+      </p>
+      <p class="how-note">From first message to finished product, all in one place.</p>
+      <a class="how-link" href="${hireHref}">Start my project</a>
     </section>
 
-    <section class="section" id="pricing">
-      <h2>Pricing</h2>
-      <div class="grid" style="margin-top:20px">
-        <div class="card plan"><h3>Quick fix</h3><div class="price">From $50<small>/hour</small></div><p class="muted">One developer, pay as you go.</p></div>
-        <div class="card plan"><h3>Site Care</h3><div class="price">$199<small>/month</small></div><p class="muted">Updates, backups and fixes.</p></div>
-        <div class="card plan featured"><h3>Product team</h3><div class="price">Custom</div><p>2 to 5 developers, on your deadline.</p></div>
-      </div>
-    </section>
+    ${pricingSection()}
 
     <section class="section card cta">
       <h2>Love building things?</h2>
@@ -329,6 +441,7 @@ async function viewHome() {
     else go('#/new');
   });
 
+  bindPricing();
   startRotator(document.getElementById('ondemand-item'));
 }
 
@@ -589,7 +702,10 @@ async function viewDashboard(params) {
 function viewNewRequest() {
   if (!state.user) { sessionStorage.setItem('tx_next', '#/new'); return go('#/signup?role=client'); }
   if (state.user.role !== 'client') { app.innerHTML = '<div class="card empty">Only client accounts can post requests.</div>'; return; }
-  const draft = sessionStorage.getItem('tx_draft') ?? '';
+  let prefill = null;
+  try { prefill = JSON.parse(sessionStorage.getItem('tx_prefill')); } catch { /* ignore */ }
+  sessionStorage.removeItem('tx_prefill');
+  const draft = sessionStorage.getItem('tx_draft') ?? prefill?.description ?? '';
   sessionStorage.removeItem('tx_draft');
 
   app.innerHTML = `
@@ -650,7 +766,15 @@ function viewNewRequest() {
     scopeBtn.innerHTML = `${icon('sparkles', { size: 18 })} Re-scope with AI`;
   }
   scopeBtn.addEventListener('click', runScope);
-  if (draft) runScope();
+  // Package and team-builder choices win over the AI's suggestions.
+  const applyPrefill = () => {
+    if (!prefill) return;
+    if (prefill.teamSize) form.teamSize.value = String(Math.min(5, prefill.teamSize));
+    if (prefill.estimateHours) form.estimateHours.value = Math.min(2000, prefill.estimateHours);
+    if (prefill.budget) form.budget.value = Math.round(prefill.budget);
+  };
+  if (draft.length >= 15) runScope().then(applyPrefill);
+  else applyPrefill();
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();

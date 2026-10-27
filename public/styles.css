@@ -270,6 +270,21 @@ textarea { resize: vertical; min-height: 110px; }
 .how-cta { margin-top: 36px; }
 @media (max-width: 760px) { .how-steps { grid-template-columns: 1fr; gap: 24px; } }
 
+/* Home "How it works": one editorial line instead of numbered columns */
+.how-line { margin-top: 72px; padding-block: 96px; text-align: center; background: var(--surface); border-block: 1px solid var(--border); }
+.how-kicker { margin: 0 0 22px; font-size: .78rem; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; color: var(--p500); }
+[data-theme="dark"] .how-kicker { color: var(--p300); }
+.how-statement { margin: 0 auto; max-width: 18em; font-family: var(--display); font-weight: 600; font-size: clamp(2.2rem, 5.4vw, 4rem); line-height: 1.15; color: #000; }
+[data-theme="dark"] .how-statement { color: var(--text); }
+.how-statement span { white-space: nowrap; }
+.how-statement em { font-weight: 500; color: color-mix(in srgb, currentColor 72%, transparent); }
+.how-statement sup { font-family: var(--display); font-style: italic; font-weight: 500; font-size: .32em; color: var(--p500); margin-right: .25em; vertical-align: super; letter-spacing: .05em; }
+[data-theme="dark"] .how-statement sup { color: var(--p300); }
+.how-note { margin: 26px auto 30px; max-width: 30em; color: var(--muted); font-size: 1.02rem; }
+.how-link { display: inline-block; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; font-size: .82rem; color: var(--text); padding-bottom: 6px; border-bottom: 1px solid var(--p400); transition: color .2s, border-color .2s; }
+.how-link:hover { text-decoration: none; color: var(--p500); border-color: var(--p500); }
+@media (max-width: 640px) { .how-line { padding-block: 64px; } .how-statement span { display: block; } }
+
 /* Standalone "Hire tech and AI experts" page (public/hire-tech-and-ai-experts.html) */
 main.seo { padding: 0; }
 .seo-hero { position: relative; color: #fff; padding-block: 72px 80px;
@@ -320,6 +335,38 @@ main.seo { padding: 0; }
 }
 @media (max-width: 640px) {
   .seo-regions { grid-template-columns: 1fr; }
+}
+
+/* Pricing: packages and the team builder */
+.packages { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: 20px; }
+.packages .plan { display: flex; flex-direction: column; margin: 0; }
+.packages .plan h3 { margin-bottom: 8px; }
+.packages .plan p { flex: 1; margin: 8px 0 18px; color: var(--muted); }
+.packages .plan.featured p { color: #cbb4ea; }
+.packages .price { font-size: 1.5rem; white-space: nowrap; }
+.btn.light { background: var(--p200); border-color: var(--p200); color: var(--p900); }
+.builder { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 32px; margin-top: 24px; padding: 28px; }
+.builder h3 { margin-bottom: 14px; font-family: var(--display); font-size: 1.7rem; font-weight: 700; }
+.builder-roles ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 28px; }
+.builder-roles li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.builder-role { display: flex; flex-direction: column; font-weight: 600; }
+.builder-role small { font-weight: 400; color: var(--muted); font-size: .85rem; }
+.stepper { display: inline-flex; align-items: center; border: 1px solid var(--border); flex: none; }
+.stepper button { width: 34px; height: 34px; border: 0; background: var(--surface-2); color: var(--text); font-size: 1.1rem; cursor: pointer; }
+.stepper button:hover:not(:disabled) { background: var(--p500); color: #fff; }
+.stepper button:disabled { opacity: .35; cursor: not-allowed; }
+.stepper output { min-width: 34px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.builder-summary { display: flex; flex-direction: column; gap: 6px; background: var(--surface-2); padding: 22px; align-self: start; }
+.builder-summary select { margin-bottom: 8px; }
+.builder-total { display: flex; flex-direction: column; padding: 14px 0; margin: 4px 0 12px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.builder-total b { font-family: var(--display); font-size: 2.6rem; line-height: 1.1; font-variant-numeric: lining-nums; color: var(--p600); }
+[data-theme="dark"] .builder-total b { color: var(--p300); }
+.builder-summary .hint { margin: 6px 0 0; }
+@media (max-width: 1000px) { .packages { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 860px) { .builder { grid-template-columns: 1fr; } }
+@media (max-width: 560px) {
+  .packages, .builder-roles ul { grid-template-columns: 1fr; }
+  .builder { padding: 20px; }
 }
 
 /* Featured plan: dark card */
