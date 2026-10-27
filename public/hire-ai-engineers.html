@@ -240,6 +240,13 @@
 
   <main class="seo">
     <section class="seo-hero seo-hero-ai">
+      <video class="seo-hero-video" autoplay muted loop playsinline preload="auto" poster="/media/ai-poster.jpg" aria-hidden="true">
+        <source src="/media/ai-loop.mp4" type="video/mp4" />
+      </video>
+      <script>
+        // Show the still frame instead of motion for people who prefer reduced motion.
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) document.currentScript.previousElementSibling.removeAttribute('autoplay');
+      </script>
       <div class="container">
         <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a> <span aria-hidden="true">/</span> <a href="/hire-tech-and-ai-experts">Hire tech and AI experts</a> <span aria-hidden="true">/</span> <span aria-current="page">AI engineers</span></nav>
         <h1><strong>Hire AI engineers</strong> <span>who ship, not just experiment</span></h1>
