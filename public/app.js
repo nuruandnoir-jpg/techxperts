@@ -151,34 +151,56 @@ darkQuery.addEventListener('change', (e) => {
 
 function renderNav() {
   const u = state.user;
-  const links = [
-    ['#/', 'Home'], ['#/developers', 'Find developers'], ['#/#team', 'Our experts'], ['/hire-tech-and-ai-experts', 'Why us'], ['#/#how', 'How it works'], ['#/#pricing', 'Pricing'],
-    ...(u ? [['#/dashboard', 'Dashboard'], ['#/logout', 'Sign out']] : [['#/signup?role=developer', 'For developers'], ['#/login', 'Sign in']]),
-  ];
-  nav.innerHTML = `<div class="container"><ul>${links.map(([h, t]) => `<li><a href="${h}">${t}</a></li>`).join('')}</ul>
-    ${u ? `<p class="hint">Signed in as ${esc(u.email)}</p>` : ''}</div>`;
-  const current = location.hash.split('?')[0] || '#/';
-  nav.querySelectorAll('a').forEach((a) => a.classList.toggle('active', a.getAttribute('href') === current));
-
+  const explore = [['#/', 'Home'], ['#/#team', 'Our experts'], ['#/#how', 'How it works'], ['#/#pricing', 'Pricing'], ['/hire-tech-and-ai-experts', 'Why us']];
   const account = u
+    ? [['#/developers', 'Find developers'], ['#/dashboard', 'Dashboard'], ['#/logout', 'Sign out']]
+    : [['#/developers', 'Find developers'], ['#/signup?role=developer', 'Join as developer'], ['#/login', 'Sign in']];
+  const list = (items) => `<ul>${items.map(([h, t]) => `<li><a href="${h}">${t}${icon('arrow-right', { size: 16 })}</a></li>`).join('')}</ul>`;
+  const cta = u?.role === 'developer' ? ['#/dashboard', 'Job board'] : ['#/new', 'Build my team'];
+  nav.innerHTML = `
+    <div class="drawer-head">
+      ${document.querySelector('.topbar .brand').outerHTML}
+      <button type="button" class="drawer-close" aria-label="Close menu">${icon('close')}</button>
+    </div>
+    <div class="drawer-body">
+      <p class="drawer-label">Explore</p>${list(explore)}
+      <p class="drawer-label">Account</p>${list(account)}
+    </div>
+    <div class="drawer-foot">
+      <a class="btn primary caps" href="${cta[0]}">${cta[1]}</a>
+      ${u ? `<p class="hint">Signed in as ${esc(u.email)}</p>` : ''}
+    </div>`;
+  const current = location.hash.split('?')[0] || '#/';
+  nav.querySelectorAll('.drawer-body a').forEach((a) => a.classList.toggle('active', a.getAttribute('href') === current));
+  nav.querySelector('.drawer-close').addEventListener('click', () => setMenu(false));
+  nav.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setMenu(false)));
+
+  const accountLink = u
     ? `<a class="top-link" href="#/dashboard">Dashboard</a>`
     : `<a class="top-link" href="#/login">Sign in</a>`;
   const ai = !u || u.role === 'client'
     ? `<a class="split-btn" href="#/new"><span class="ico">${icon('sparkles', { size: 18 })}</span><span class="lbl">AI Assistant</span></a>`
     : `<a class="split-btn" href="#/dashboard"><span class="ico">${icon('briefcase', { size: 18 })}</span><span class="lbl">Job board</span></a>`;
-  topActions.innerHTML = `<button type="button" class="theme-toggle"></button>${account}${ai}`;
+  topActions.innerHTML = `<button type="button" class="theme-toggle"></button>${accountLink}${ai}`;
   topActions.querySelector('.theme-toggle').addEventListener('click', toggleTheme);
   applyTheme(currentTheme());
 }
 
+// The menu is a drawer that slides in from the left over a dimmed page.
+const scrim = document.getElementById('menu-scrim');
 function setMenu(open) {
+  const wasOpen = nav.classList.contains('open');
   nav.classList.toggle('open', open);
+  nav.inert = !open;
+  scrim.hidden = !open;
+  document.body.classList.toggle('menu-open', open);
   menuBtn.setAttribute('aria-expanded', open);
-  menuBtn.querySelector('.ico').innerHTML = icon(open ? 'close' : 'menu');
+  if (open) nav.querySelector('.drawer-close')?.focus();
+  else if (wasOpen) menuBtn.focus();
 }
 menuBtn.addEventListener('click', () => setMenu(!nav.classList.contains('open')));
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false); });
-document.addEventListener('click', (e) => { if (!e.target.closest('.topbar')) setMenu(false); });
+scrim.addEventListener('click', () => setMenu(false));
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && nav.classList.contains('open')) setMenu(false); });
 
 // ---------- views ----------
 
