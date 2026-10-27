@@ -1,31 +1,22 @@
-import { test, before, after } from 'node:test';
+import { test, before } from 'node:test';
 import assert from 'node:assert/strict';
-import { createApp } from '../server/app.js';
-import { openDatabase } from '../server/db.js';
-import { seed, DEMO_PASSWORD } from '../server/seed.js';
-import { heuristicScope } from '../server/ai.js';
+import { app } from '../src/api.js';
+import { heuristicScope } from '../src/ai.js';
+import { createD1 } from './d1.js';
 
-delete process.env.ANTHROPIC_API_KEY;
+const DEMO_PASSWORD = 'demo1234';
+let env;
 
-let server;
-let base;
-
-before(async () => {
-  const db = openDatabase(':memory:');
-  seed(db);
-  server = createApp({ db, secret: 'test-secret' }).listen(0);
-  await new Promise((r) => server.once('listening', r));
-  base = `http://127.0.0.1:${server.address().port}/api`;
+before(() => {
+  env = { DB: createD1(), DEMO_DATA: 'true' };
 });
 
-after(() => server.close());
-
 async function api(path, { token, method, body } = {}) {
-  const res = await fetch(base + path, {
+  const res = await app.request(`/api${path}`, {
     method: method ?? (body ? 'POST' : 'GET'),
     headers: { 'content-type': 'application/json', ...(token && { authorization: `Bearer ${token}` }) },
     body: body && JSON.stringify(body),
-  });
+  }, env);
   return { status: res.status, data: await res.json() };
 }
 

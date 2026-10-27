@@ -23,37 +23,45 @@ Your tech team, on your timeline. Clients describe what they're building, set a 
 
 ## Tech stack
 
-- **Backend:** Node.js 22.5+, Express 5, SQLite through the built-in `node:sqlite` module (no database server needed)
-- **Auth:** scrypt password hashing and HMAC-signed bearer tokens
-- **AI:** Claude (`claude-opus-5-5`) through the Anthropic SDK with structured outputs. If no API key is set, or the call fails, it falls back to a built-in keyword heuristic.
-- **Frontend:** a single-page app in plain HTML, CSS and JS. There is no build step.
+- **Hosting:** a Cloudflare Worker. It serves the website files from `public/` and the API under `/api`.
+- **Database:** Cloudflare D1 (SQLite). The app creates its own tables on first use, so there are no migrations to run.
+- **API:** [Hono](https://hono.dev) (`src/api.js`), with the entry point in `src/worker.js`.
+- **Auth:** PBKDF2 password hashing and HMAC-signed bearer tokens, both using Web Crypto.
+- **AI:** Claude (`claude-opus-5-5`) through the Anthropic SDK with structured outputs. Without an API key, or if the call fails, it falls back to a built-in keyword heuristic.
+- **Frontend:** a single-page app in plain HTML, CSS and JS, with no build step.
 
-## Getting started
+## Deploying to Cloudflare
+
+The repository is set up for **Workers Builds**: connect it in the Cloudflare dashboard (**Workers & Pages → Create → Import a repository**) and every push deploys automatically. `wrangler.toml` holds the configuration:
+
+- **Database:** the D1 database `techxperts` is created automatically on the first deploy, because `wrangler.toml` gives no `database_id`. The tables are created on the first request.
+- **Demo data:** with `DEMO_DATA = "true"`, an empty database is filled with six demo developers, a demo client and a demo job. **Set it to `"false"` before launch.** Demo accounts use the public password `demo1234`.
+- **Optional secrets** (Worker → **Settings → Variables and Secrets**):
+
+  | Secret | Purpose |
+  |--------|---------|
+  | `ANTHROPIC_API_KEY` | Turns on Claude-powered job scoping |
+  | `AUTH_SECRET` | Login-token signing key. If unset, a random key is generated and kept in the database. |
+
+- **Free plan:** password hashing uses 100,000 PBKDF2 iterations, the maximum Workers allows. Each sign-in and sign-up takes a few tens of milliseconds of CPU, which can exceed the free plan's 10 ms CPU limit. If sign-in fails with "exceeded CPU", switch to Workers Paid, or lower `DEFAULT_ITERATIONS` in `src/auth.js` (existing passwords keep working, because each hash stores its own iteration count).
+
+To deploy from your own machine instead, run `npx wrangler login`, then `npm run deploy`.
+
+## Running locally
 
 ```bash
 npm install
-npm start            # http://localhost:3000
+npm run dev          # http://localhost:8787, using a local D1 database
 ```
 
-On first run the database is seeded with six demo developers and one demo client. Every demo account uses the password `demo1234`:
+Demo logins (password `demo1234`):
 
 | Role      | Email                   |
 |-----------|-------------------------|
 | Client    | `client@techxperts.dev` |
 | Developer | `amara@techxperts.dev`, `kenji@…`, `sofia@…`, `david@…`, `priya@…`, `lucas@…` |
 
-### Configuration
-
-Copy `.env.example` and set:
-
-| Variable            | Purpose |
-|---------------------|---------|
-| `PORT`              | HTTP port (default `3000`) |
-| `AUTH_SECRET`       | Secret for signing login tokens. **Required when `NODE_ENV=production`.** |
-| `ANTHROPIC_API_KEY` | Turns on Claude-powered scoping (optional) |
-| `DB_PATH`           | SQLite file (default `data/techxperts.db`) |
-
-Example: `AUTH_SECRET=$(openssl rand -hex 32) ANTHROPIC_API_KEY=sk-ant-... npm start`
+For local secrets, copy `.dev.vars.example` to `.dev.vars`. After changing the demo data in `scripts/make-seed.js`, run `npm run seed:generate`.
 
 ### Tests
 
@@ -61,7 +69,7 @@ Example: `AUTH_SECRET=$(openssl rand -hex 32) ANTHROPIC_API_KEY=sk-ant-... npm s
 npm test
 ```
 
-The tests cover registration and login, permissions, AI-scoping fallback, and the full job lifecycle (post → match → accept → message → review → approve → rate).
+The tests run the API against an in-memory D1 stand-in (`test/d1.js`, built on `node:sqlite`, Node 22.5+). They cover registration and login, permissions, AI-scoping fallback, the full job lifecycle and team jobs.
 
 ## API overview
 
@@ -91,18 +99,19 @@ All endpoints are under `/api`. Authenticated routes need `Authorization: Bearer
 ## Project layout
 
 ```
-server/
-  index.js          entry point
-  app.js            Express app, auth middleware, error handling
-  db.js             SQLite schema
-  auth.js           password hashing and tokens
+src/
+  worker.js         Cloudflare Worker entry (API + static files)
+  api.js            Hono API: auth, developers, jobs and teams
+  schema.js         D1 schema (applied automatically)
+  auth.js           password hashing and tokens (Web Crypto)
   ai.js             Claude scoping and heuristic fallback
   catalog.js        service categories, skills, urgency levels
-  seed.js           demo data
-  routes/           auth, developers, requests
+  helpers.js        validation and response shapes
+  demo-seed.js      demo data (generated by scripts/make-seed.js)
 public/             single-page frontend (index.html, styles.css, app.js)
   images/, media/   hero photo, background video loop and poster
-test/               node:test API tests
+test/               node:test API tests and the D1 stand-in
+wrangler.toml       Cloudflare configuration
 ```
 
 ## Ideas for next steps

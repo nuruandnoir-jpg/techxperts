@@ -803,11 +803,24 @@ async function route() {
 
 async function init() {
   loading();
-  const [catalog] = await Promise.all([
-    api('/catalog'),
-    state.token ? api('/auth/me').then((d) => { state.user = d.user; }).catch(() => setSession(null)) : null,
-  ]);
-  state.catalog = catalog;
+  try {
+    const [catalog] = await Promise.all([
+      api('/catalog'),
+      state.token ? api('/auth/me').then((d) => { state.user = d.user; }).catch(() => setSession(null)) : null,
+    ]);
+    if (!Array.isArray(catalog?.categories)) throw new Error('Unexpected response from the server');
+    state.catalog = catalog;
+  } catch (err) {
+    console.error(err);
+    app.innerHTML = `
+      <div class="narrow card empty">
+        <h2>We can't reach TechXperts right now</h2>
+        <p>Please check your connection and try again in a moment.</p>
+        <button type="button" class="btn primary caps" id="retry">Try again</button>
+      </div>`;
+    document.getElementById('retry').addEventListener('click', init);
+    return;
+  }
   window.addEventListener('hashchange', route);
   route();
 }

@@ -1,0 +1,25 @@
+# Cloudflare Worker config. Cloudflare reads this when it builds from GitHub.
+name = "techxperts"
+main = "src/worker.js"
+compatibility_date = "2025-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Website files (HTML, CSS, JS, images, video).
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = ["/api/*"]
+
+# The database. No database_id: Cloudflare creates the database on the first deploy.
+[[d1_databases]]
+binding = "DB"
+database_name = "techxperts"
+
+[vars]
+# Load the demo developers and demo client into an empty database.
+# Set to "false" before launch (demo logins use the public password "demo1234").
+DEMO_DATA = "true"
+
+# Optional secrets, set in the dashboard (Settings → Variables and Secrets):
+#   ANTHROPIC_API_KEY  enables Claude-powered job scoping
+#   AUTH_SECRET        login-token signing key (generated automatically if not set)

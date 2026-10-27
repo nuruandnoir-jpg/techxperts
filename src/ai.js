@@ -25,10 +25,15 @@ Pick "emergency" only when something is down, hacked or losing money right now; 
 Suggest the smallest team that can deliver well: 1 for fixes and small tasks, 2-3 for a product or app build, up to 5 only for large multi-part builds.
 Keep the estimate realistic for experienced developers.`;
 
+// One client per API key, reused across requests in the same Worker isolate.
 let client = null;
-function getClient() {
-  if (!process.env.ANTHROPIC_API_KEY) return null;
-  client ??= new Anthropic();
+let clientKey = null;
+function getClient(apiKey) {
+  if (!apiKey) return null;
+  if (clientKey !== apiKey) {
+    client = new Anthropic({ apiKey });
+    clientKey = apiKey;
+  }
   return client;
 }
 
@@ -71,9 +76,9 @@ export function heuristicScope(description) {
   };
 }
 
-/** Scopes a free-text request using Claude when available, otherwise the heuristic. */
-export async function scopeRequest(description) {
-  const anthropic = getClient();
+/** Scopes a free-text request using Claude when an API key is set, otherwise the heuristic. */
+export async function scopeRequest(description, apiKey) {
+  const anthropic = getClient(apiKey);
   if (!anthropic) return heuristicScope(description);
 
   try {

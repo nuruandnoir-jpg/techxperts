@@ -1,8 +1,5 @@
-import { DatabaseSync } from 'node:sqlite';
-import fs from 'node:fs';
-import path from 'node:path';
-
-const SCHEMA = `
+// Database schema. Every statement is idempotent, so it runs safely on every cold start.
+export const SCHEMA = `
 CREATE TABLE IF NOT EXISTS users (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,
   role          TEXT NOT NULL CHECK (role IN ('client', 'developer', 'admin')),
@@ -75,34 +72,14 @@ CREATE INDEX IF NOT EXISTS idx_requests_developer ON requests(developer_id);
 CREATE INDEX IF NOT EXISTS idx_requests_status ON requests(status);
 CREATE INDEX IF NOT EXISTS idx_messages_request ON messages(request_id);
 CREATE INDEX IF NOT EXISTS idx_team_developer ON request_team(developer_id);
+
+-- App settings, e.g. the generated login-token secret when AUTH_SECRET isn't set.
+CREATE TABLE IF NOT EXISTS settings (
+  key    TEXT PRIMARY KEY,
+  value  TEXT NOT NULL
+);
 `;
 
-// Brings databases created before team support up to date.
-function migrate(db) {
-  const columns = new Set(db.prepare('PRAGMA table_info(requests)').all().map((c) => c.name));
-  if (!columns.has('team_size')) db.exec('ALTER TABLE requests ADD COLUMN team_size INTEGER NOT NULL DEFAULT 1');
-  if (!columns.has('deadline')) db.exec('ALTER TABLE requests ADD COLUMN deadline TEXT');
-  db.exec('INSERT OR IGNORE INTO request_team (request_id, developer_id) SELECT id, developer_id FROM requests WHERE developer_id IS NOT NULL');
-}
-
-export function openDatabase(dbPath = process.env.DB_PATH || 'data/techxperts.db') {
-  if (dbPath !== ':memory:') fs.mkdirSync(path.dirname(path.resolve(dbPath)), { recursive: true });
-  const db = new DatabaseSync(dbPath);
-  db.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;');
-  db.exec(SCHEMA);
-  migrate(db);
-  return db;
-}
-
-/** Runs fn inside a transaction, rolling back if it throws. */
-export function transaction(db, fn) {
-  db.exec('BEGIN');
-  try {
-    const result = fn();
-    db.exec('COMMIT');
-    return result;
-  } catch (err) {
-    db.exec('ROLLBACK');
-    throw err;
-  }
-}
+export const SCHEMA_STATEMENTS = SCHEMA.split(';')
+  .map((s) => s.replace(/^\s*--.*$/gm, '').trim())
+  .filter(Boolean);
