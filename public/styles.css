@@ -852,3 +852,12 @@ input:focus, textarea:focus, select:focus { border-color: var(--p400); outline: 
   border-block: 1px solid rgb(224 170 255 / 10%); }
 @media (max-width: 760px) { .pricing-band { padding-block: 64px 72px; } .pricing-band .plan.featured, .pricing-band .plan.featured:hover { transform: none; } }
 @media (prefers-reduced-motion: reduce) { .pricing-band .plan, .pricing-band .plan:hover { transition: none; transform: none; } }
+
+/* Slim strip above the menu bar with the contact email */
+.utility-bar { background: #10002b; color: #d9c4f2; font-size: .85rem; }
+.utility-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 38px; }
+.utility-mail { display: inline-flex; align-items: center; gap: 8px; color: #fff; font-weight: 600; }
+.utility-mail svg { color: var(--p300); flex: none; }
+.utility-mail:hover span { text-decoration: underline; text-underline-offset: 3px; }
+[data-theme="dark"] .utility-bar { background: #08001a; border-bottom: 1px solid rgb(224 170 255 / 10%); }
+@media (max-width: 640px) { .utility-note { display: none; } .utility-inner { justify-content: center; } }
