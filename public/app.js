@@ -68,14 +68,6 @@ function toast(text) {
 
 const go = (hash) => { location.hash = hash; };
 
-const SERVICE_ICONS = { web: 'code', ai: 'ai', maintenance: 'wrench', devops: 'cloud', consulting: 'bulb' };
-const SERVICE_COPY = {
-  web: 'Websites and apps your customers will love to use.',
-  ai: 'Chatbots and automations that work while you sleep.',
-  maintenance: 'Fast fixes, updates and security. Your site, always on.',
-  devops: 'Launch, scale and stay online without the stress.',
-  consulting: 'Smart advice before you spend a single cent.',
-};
 const STATUS_FLOW = ['open', 'assigned', 'in_progress', 'review', 'completed'];
 const STATUS_LABEL = { open: 'Open', assigned: 'Assigned', in_progress: 'In progress', review: 'In review', completed: 'Completed', cancelled: 'Cancelled' };
 
@@ -160,7 +152,7 @@ darkQuery.addEventListener('change', (e) => {
 function renderNav() {
   const u = state.user;
   const links = [
-    ['#/', 'Home'], ['#/developers', 'Find developers'], ['#/#services', 'What we do'], ['#/#how', 'How it works'], ['#/#pricing', 'Pricing'],
+    ['#/', 'Home'], ['#/developers', 'Find developers'], ['#/#team', 'Our experts'], ['#/#how', 'How it works'], ['#/#pricing', 'Pricing'],
     ...(u ? [['#/dashboard', 'Dashboard'], ['#/logout', 'Sign out']] : [['#/signup?role=developer', 'For developers'], ['#/login', 'Sign in']]),
   ];
   nav.innerHTML = `<div class="container"><ul>${links.map(([h, t]) => `<li><a href="${h}">${t}</a></li>`).join('')}</ul>
@@ -219,17 +211,11 @@ const ROLE_PHOTOS_WIDE = [
 ];
 
 
-function rolePhoto([src, role, skills, category], developers, width, height) {
-  const count = developers.filter((d) => d.categories.includes(category)).length;
+function rolePhoto([src, role, , category], width, height) {
   return `
     <a class="role-photo" href="#/developers?category=${category}">
       <img src="${src}" alt="" loading="lazy" width="${width}" height="${height}" />
-      <div class="role-caption">
-        ${count ? `<span class="badge available">${count} available now</span>` : ''}
-        <h3>${role}</h3>
-        <p>${skills}</p>
-      </div>
-      <span class="role-go">${icon('arrow-up-right', { size: 16 })}</span>
+      <h3 class="role-caption">${role}</h3>
     </a>`;
 }
 
@@ -255,34 +241,31 @@ function stopRotator() {
 }
 
 async function viewHome() {
-  const [stats, { developers }] = await Promise.all([load('/stats'), load('/developers?available=true')]);
+  const stats = await load('/stats');
+  const hireHref = state.user?.role === 'developer' ? '#/dashboard' : '#/new';
   app.innerHTML = `
     <section class="hero bleed">
       <div class="hero-media">
         <picture>
           <source media="(max-width: 900px)" srcset="/images/hero-sm.jpg" />
-          <img src="/images/hero.jpg" alt="Two developers working together at a computer" width="1800" height="1198" fetchpriority="high" />
+          <img src="/images/hero.jpg" alt="" width="1800" height="1198" fetchpriority="high" />
         </picture>
       </div>
       <div class="hero-copy">
-        <h1><span class="soft">Your tech team,</span> <span>on your</span> <span>timeline</span></h1>
-        <p class="lead">Developers, AI engineers and security experts, assembled around your idea and your deadline. No hiring. No agencies. Just work that ships.</p>
-        <div class="hero-actions">
-          <a class="btn primary caps" href="${state.user?.role === 'developer' ? '#/dashboard' : '#/new'}">Build my team</a>
-          <a class="btn outline caps" href="#/developers">Meet the experts</a>
-        </div>
-        <p class="dev-link">Are you a developer? <a href="#/signup?role=developer">Join the network ${icon('arrow-right', { size: 16 })}</a></p>
-        <div class="hero-tiles">
-          <a class="tile ai-tile" href="${state.user?.role === 'developer' ? '#/dashboard' : '#/new'}">
-            <span class="ai-tile-icon">${icon('sparkles', { size: 20 })}</span>
-            <b>AI Assistant</b>
-            <span>Tell it your idea. Get a plan, a timeline and a team in minutes.</span>
-            <span class="ai-tile-go">${icon('arrow-up-right', { size: 16 })}</span>
-          </a>
-          <div class="tile stat">
-            <div class="avatars">${developers.slice(0, 2).map((d) => avatar(d)).join('')}<a class="arrow" href="#/developers" aria-label="Browse developers">${icon('arrow-up-right', { size: 16 })}</a></div>
-            <b>Over ${Math.floor(developers.reduce((n, d) => n + d.jobsCompleted, 0) / 10) * 10}</b>
-            <span>projects shipped by our teams</span>
+        <p class="eyebrow">${stats.developers} experts ready to join your team</p>
+        <h1><strong>Your tech team,</strong> <span>on your timeline</span></h1>
+        <div class="finder">
+          <div class="finder-tabs" role="tablist">
+            <button type="button" role="tab" aria-selected="true" class="on" data-finder="hire">Hire a team</button>
+            <button type="button" role="tab" aria-selected="false" data-finder="join">Join as developer</button>
+          </div>
+          <form class="finder-body" id="finder-hire">
+            <input id="finder-text" placeholder="What do you need built?" aria-label="What do you need built?" required />
+            <button class="btn primary">Find my team</button>
+          </form>
+          <div class="finder-body" id="finder-join" hidden>
+            <span class="finder-note">Set your rate. Join client teams.</span>
+            <a class="btn primary" href="#/signup?role=developer">Join now</a>
           </div>
         </div>
       </div>
@@ -296,53 +279,55 @@ async function viewHome() {
       </div>
     </section>
 
-    <section class="section" id="services">
-      <div class="section-head"><div><h2>Whatever you're building, we have the team</h2><p class="muted">From a five-minute fix to a full product launch.</p></div></div>
-      <div class="grid">
-        ${state.catalog.categories.map((c) => `
-          <div class="card">
-            <div class="service-icon">${icon(SERVICE_ICONS[c.id] ?? 'sparkles', { size: 22 })}</div>
-            <h3>${esc(c.label)}</h3>
-            <p class="muted">${esc(SERVICE_COPY[c.id] ?? '')}</p>
-            <div class="tags">${c.skills.slice(0, 4).map((s) => `<span class="tag">${esc(s)}</span>`).join('')}</div>
-          </div>`).join('')}
-      </div>
+    <section class="section" id="team">
+      <div class="section-head"><h2>Meet the people who'll build it</h2><a class="btn" href="#/developers">Meet everyone</a></div>
+      <div class="role-photos">${ROLE_PHOTOS.map((r) => rolePhoto(r, 720, 900)).join('')}</div>
+      <div class="role-photos wide">${ROLE_PHOTOS_WIDE.map((r) => rolePhoto(r, 1200, 750)).join('')}</div>
     </section>
 
     <section class="how bleed" id="how">
-      <div class="how-head">
-        <h2>From idea to launch in three steps</h2>
-        <p class="muted">No hiring, no agencies. Just a clear path from your idea to a finished product.</p>
-      </div>
+      <h2>Three simple steps</h2>
       <ol class="how-steps">
-        <li><span class="how-num">01</span><h3>Share your idea</h3><p>Tell us what you're building and when you need it. AI turns it into a clear plan.</p></li>
-        <li><span class="how-num">02</span><h3>Meet your team</h3><p>Hand-picked experts join your project. Choose them yourself, or let them come to you.</p></li>
-        <li><span class="how-num">03</span><h3>Launch on time</h3><p>Chat with your team, watch progress live and approve every milestone.</p></li>
+        <li><span class="how-num">01</span><h3>Share your idea</h3></li>
+        <li><span class="how-num">02</span><h3>Meet your team</h3></li>
+        <li><span class="how-num">03</span><h3>Launch on time</h3></li>
       </ol>
-      <div class="how-cta"><a class="btn primary caps" href="${state.user ? '#/new' : '#/signup?role=client'}">Start my project</a></div>
-    </section>
-
-    <section class="section">
-      <div class="section-head"><div><h2>Meet the people who'll build it</h2><p class="muted">Vetted experts, ready to join your team today.</p></div><a class="btn" href="#/developers">Meet everyone ${icon('arrow-right', { size: 16 })}</a></div>
-      <div class="role-photos">${ROLE_PHOTOS.map((r) => rolePhoto(r, developers, 720, 900)).join('')}</div>
-      <div class="role-photos wide">${ROLE_PHOTOS_WIDE.map((r) => rolePhoto(r, developers, 1200, 750)).join('')}</div>
+      <div class="how-cta"><a class="btn primary caps" href="${hireHref}">Start my project</a></div>
     </section>
 
     <section class="section" id="pricing">
-      <h2>Simple pricing, no surprises</h2>
-      <p class="muted">No hidden fees. You only pay for work you approve.</p>
+      <h2>Pricing</h2>
       <div class="grid" style="margin-top:20px">
-        <div class="card plan"><h3>Quick fix</h3><div class="price">Pay as you go</div><ul><li>One developer</li><li>From $50 an hour</li><li>Pay only for approved work</li></ul></div>
-        <div class="card plan"><h3>Site Care</h3><div class="price">$199<small>/month</small></div><ul><li>Updates and backups</li><li>Security checks</li><li>4 hours of fixes</li><li>Fast response</li></ul></div>
-        <div class="card plan featured"><span class="badge open">Most popular</span><h3 style="margin-top:10px">Product team</h3><div class="price">Custom</div><ul><li>A team of 2 to 5 developers</li><li>Works to your deadline</li><li>Scale up or down anytime</li></ul></div>
+        <div class="card plan"><h3>Quick fix</h3><div class="price">From $50<small>/hour</small></div><p class="muted">One developer, pay as you go.</p></div>
+        <div class="card plan"><h3>Site Care</h3><div class="price">$199<small>/month</small></div><p class="muted">Updates, backups and fixes.</p></div>
+        <div class="card plan featured"><h3>Product team</h3><div class="price">Custom</div><p>2 to 5 developers, on your deadline.</p></div>
       </div>
     </section>
 
     <section class="section card cta">
-      <h2>Love building things? Join us.</h2>
-      <p>Work on real products, set your own rate and get matched with teams that need your skills.</p>
+      <h2>Love building things?</h2>
       <a class="btn lg" href="#/signup?role=developer">Join as a developer</a>
     </section>`;
+
+  // Hero finder: "Hire a team" sends the idea to the job form; "Join as developer" links to sign-up.
+  app.querySelectorAll('[data-finder]').forEach((tab) => tab.addEventListener('click', () => {
+    app.querySelectorAll('[data-finder]').forEach((t) => {
+      const on = t === tab;
+      t.classList.toggle('on', on);
+      t.setAttribute('aria-selected', on);
+      document.getElementById(`finder-${t.dataset.finder}`).hidden = !on;
+    });
+  }));
+  document.getElementById('finder-hire').addEventListener('submit', (e) => {
+    e.preventDefault();
+    sessionStorage.setItem('tx_draft', document.getElementById('finder-text').value.trim());
+    if (!state.user) {
+      sessionStorage.setItem('tx_next', '#/new');
+      toast('Create a free account to meet your team');
+      go('#/signup?role=client');
+    } else if (state.user.role !== 'client') toast('Sign in with a client account to hire a team');
+    else go('#/new');
+  });
 
   startRotator(document.getElementById('ondemand-item'));
 }

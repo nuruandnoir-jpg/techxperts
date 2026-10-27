@@ -16,7 +16,7 @@ Your tech team, on your timeline. Clients describe what they're building, set a 
 - Ratings and completed-job counts update automatically.
 
 **Platform**
-- Landing page with a full-width team photo, services, how it works, available developers and pricing (quick fix, monthly Site Care plan, product team).
+- A minimal landing page: a photo hero with a hire/join finder, a rotating "On demand" line, role photos, three steps, pricing and a developer call to action.
 - A developer directory you can search and filter.
 - Role-based access: clients only see their own jobs. Developers see recruiting jobs and jobs they're on. Only the client and the team can message in a job room.
 - Light and dark themes, and a responsive layout down to phone width.
