@@ -8,7 +8,7 @@ compatibility_flags = ["nodejs_compat"]
 [assets]
 directory = "./public"
 binding = "ASSETS"
-run_worker_first = ["/api/*"]
+run_worker_first = ["/api/*", "/", "/index.html", "/hire-tech-and-ai-experts", "/robots.txt", "/sitemap.xml"]
 
 # The database. No database_id: Cloudflare creates the database on the first deploy.
 [[d1_databases]]
@@ -19,6 +19,11 @@ database_name = "techxperts"
 # Load the demo developers and demo client into an empty database.
 # Set to "false" before launch (demo logins use the public password "demo1234").
 DEMO_DATA = "true"
+
+# Public address used in canonical links, the sitemap and social tags. Leave empty to use
+# whatever address the site is visited on; set it once you have a custom domain,
+# for example SITE_URL = "https://www.example.com".
+SITE_URL = ""
 
 # Optional secrets, set in the dashboard (Settings → Variables and Secrets):
 #   ANTHROPIC_API_KEY  enables Claude-powered job scoping

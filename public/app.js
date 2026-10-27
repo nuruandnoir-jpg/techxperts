@@ -152,7 +152,7 @@ darkQuery.addEventListener('change', (e) => {
 function renderNav() {
   const u = state.user;
   const links = [
-    ['#/', 'Home'], ['#/developers', 'Find developers'], ['#/#team', 'Our experts'], ['#/#how', 'How it works'], ['#/#pricing', 'Pricing'],
+    ['#/', 'Home'], ['#/developers', 'Find developers'], ['#/#team', 'Our experts'], ['/hire-tech-and-ai-experts', 'Why us'], ['#/#how', 'How it works'], ['#/#pricing', 'Pricing'],
     ...(u ? [['#/dashboard', 'Dashboard'], ['#/logout', 'Sign out']] : [['#/signup?role=developer', 'For developers'], ['#/login', 'Sign in']]),
   ];
   nav.innerHTML = `<div class="container"><ul>${links.map(([h, t]) => `<li><a href="${h}">${t}</a></li>`).join('')}</ul>

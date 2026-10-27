@@ -269,6 +269,61 @@ textarea { resize: vertical; min-height: 110px; }
 .how-cta { margin-top: 36px; }
 @media (max-width: 760px) { .how-steps { grid-template-columns: 1fr; gap: 24px; } }
 
+/* Standalone "Hire tech and AI experts" page (public/hire-tech-and-ai-experts.html) */
+main.seo { padding: 0; }
+.seo-topnav { justify-self: start; display: flex; gap: 18px; }
+.seo-topnav a { color: var(--text); font-weight: 500; font-size: .92rem; }
+.seo-hero { position: relative; color: #fff; padding-block: 72px 80px;
+  background: linear-gradient(90deg, rgb(16 0 43 / 92%) 0%, rgb(16 0 43 / 70%) 55%, rgb(16 0 43 / 35%) 100%), url('/images/hero.jpg') center 30% / cover no-repeat, var(--p900); }
+.crumbs { font-size: .85rem; color: #cbb4ea; margin-bottom: 18px; }
+.crumbs a { color: #e3d0f7; }
+.seo-hero h1 { font-size: clamp(2.4rem, 5.6vw, 4rem); line-height: 1.06; color: #fff; max-width: 15em; }
+.seo-hero h1 strong { display: block; font-weight: 700; }
+.seo-hero h1 span { display: block; font-weight: 400; }
+.seo-lead { max-width: 38em; font-size: 1.1rem; color: #e3d0f7; margin: 18px 0 28px; }
+.seo-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.seo-hero .btn.primary { background: #fff; border-color: #fff; color: var(--p900); }
+.seo-hero .btn.outline { color: #fff; border-color: rgb(255 255 255 / 55%); }
+.seo-section { padding-block: 72px 0; }
+.seo-section h2, .seo-band h2, .seo-body .how h2 { font-size: clamp(1.8rem, 3.6vw, 2.5rem); }
+.seo-sub { color: var(--muted); max-width: 40em; }
+.seo-band .seo-sub { color: #cbb4ea; }
+.seo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 28px 32px; margin-top: 28px; }
+.seo-grid article { border-top: 1px solid var(--p300); padding-top: 16px; }
+.seo-grid h3, .seo-regions h3 { margin: 0 0 6px; font-size: 1.1rem; }
+.seo-grid p, .seo-regions p { margin: 0; color: var(--muted); }
+.seo-band { margin-top: 72px; padding-block: 64px; background: var(--p900); color: #f6ecff; }
+[data-theme="dark"] .seo-band { background: #0a0020; border-block: 1px solid var(--border); }
+.seo-band h2 { color: #fff; }
+.seo-regions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: 28px; }
+.seo-regions article { background: rgb(255 255 255 / 6%); border: 1px solid rgb(224 170 255 / 20%); padding: 22px; }
+.seo-regions h3 { color: #fff; }
+.seo-regions p { color: #cbb4ea; }
+.seo-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 48px; align-items: center; }
+.seo-split p { color: var(--muted); }
+.seo-list { padding-left: 20px; margin: 16px 0 24px; color: var(--text); display: grid; gap: 6px; }
+.seo-photos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.seo-photos img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 4 / 5; display: block; border-radius: var(--radius); }
+.seo-photos img:last-child { grid-column: span 2; aspect-ratio: 16 / 8; }
+.seo-body .how { margin-top: 72px; }
+.seo-body .how-steps p { margin-top: 6px; }
+.seo-faq details { border-bottom: 1px solid var(--border); padding: 16px 0; }
+.seo-faq details:first-of-type { border-top: 1px solid var(--border); margin-top: 20px; }
+.seo-faq summary { cursor: pointer; font-family: var(--heading); font-weight: 600; font-size: 1.05rem; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+.seo-faq summary::-webkit-details-marker { display: none; }
+.seo-faq summary::after { content: '+'; color: var(--p500); font-size: 1.4rem; line-height: 1; }
+.seo-faq details[open] summary::after { content: '\2212'; }
+.seo-faq details p { margin: 10px 0 0; color: var(--muted); max-width: 46em; }
+.seo-body .cta { margin-bottom: 72px; }
+@media (max-width: 900px) {
+  .seo-regions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .seo-split { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .seo-topnav a:not(:first-child) { display: none; }
+  .seo-regions { grid-template-columns: 1fr; }
+}
+
 /* Featured plan: dark card */
 .plan.featured { background: var(--p900); color: #f6ecff; border: 1px solid var(--p700); }
 .plan.featured ul, .plan.featured .price small { color: #cbb4ea; }
