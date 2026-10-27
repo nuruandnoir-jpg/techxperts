@@ -467,6 +467,7 @@ async function viewHome() {
     <section class="section card cta">
       <h2>Love building things?</h2>
       <a class="btn lg" href="#/signup?role=developer">Join as a developer</a>
+      <p class="contact-line">Questions? Email us at <a href="mailto:techxpertts1@gmail.com">techxpertts1@gmail.com</a></p>
     </section>`;
 
   // Hero finder: "Hire a team" sends the idea to the job form; "Join as developer" links to sign-up.

@@ -704,3 +704,13 @@ input:focus, textarea:focus, select:focus { border-color: var(--p400); outline: 
 .seo-hero-ai::before { content: ''; position: absolute; inset: 0; z-index: -1;
   background: linear-gradient(90deg, rgb(16 0 43 / 88%) 0%, rgb(16 0 43 / 62%) 55%, rgb(16 0 43 / 30%) 100%); }
 @media (max-width: 640px) { .seo-hero-ai::before { background: rgb(16 0 43 / 72%); } }
+
+/* Contact by email */
+.footer-mail { margin: -6px 0 18px; }
+.footer-mail a { display: inline-flex; align-items: center; gap: 8px; color: #e8dcf6; font-weight: 500; }
+.footer-mail a:hover { color: #fff; }
+.footer-mail svg { color: var(--p300); flex: none; }
+.contact-line { margin: 18px 0 0; font-size: .95rem; color: var(--muted, inherit); opacity: .9; }
+.contact-line a { font-weight: 600; text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
+.cta .contact-line { color: #d9c4f2; opacity: 1; }
+.cta .contact-line a { color: #fff; text-decoration-color: var(--p300); }
