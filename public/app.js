@@ -340,7 +340,6 @@ async function viewHome() {
       <div class="section-head"><div><h2>Meet the people who'll build it</h2><p class="muted">Vetted experts, ready to join your team today.</p></div><a class="btn" href="#/developers">Meet everyone ${icon('arrow-right', { size: 16 })}</a></div>
       <div class="role-photos">${ROLE_PHOTOS.map((r) => rolePhoto(r, developers, 720, 900)).join('')}</div>
       <div class="role-photos wide">${ROLE_PHOTOS_WIDE.map((r) => rolePhoto(r, developers, 1200, 750)).join('')}</div>
-      <div class="grid" style="margin-top:24px">${developers.slice(0, 3).map(devCard).join('')}</div>
     </section>
 
     <section class="section" id="pricing">
