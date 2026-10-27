@@ -198,8 +198,13 @@ const EXAMPLES = [
   ['Speed up my site', 'My website is slow and needs speeding up'],
 ];
 
-// Tech shown in the scrolling strip.
-const TECH = ['React', 'Next.js', 'Node.js', 'Python', 'Claude AI', 'OpenAI', 'AWS', 'Google Cloud', 'Docker', 'WordPress', 'Shopify', 'Stripe', 'Figma', 'Flutter', 'PostgreSQL'];
+// What clients can get on demand, shown in the scrolling strip: [label, icon].
+const OFFERINGS = [
+  ['Full-stack developers', 'code'], ['Cybersecurity experts', 'shield'], ['AI & ML engineers', 'ai'],
+  ['Cloud & DevOps engineers', 'cloud'], ['Mobile app developers', 'mobile'], ['UI/UX designers', 'design'],
+  ['Data engineers', 'data'], ['QA & testing', 'bug'], ['Backend & APIs', 'server'], ['Site maintenance', 'wrench'],
+  ['Automation', 'terminal'], ['Analytics & dashboards', 'chart'], ['Tech consultants', 'bulb'],
+];
 
 async function viewHome() {
   const [stats, { developers }] = await Promise.all([load('/stats'), load('/developers?available=true')]);
@@ -235,12 +240,12 @@ async function viewHome() {
       </div>
     </section>
 
-    <section class="strip bleed" aria-label="Technologies we work with">
+    <section class="strip bleed" aria-label="What you can get on demand">
       <div class="strip-inner">
-        <span class="strip-label">We work with</span>
+        <span class="strip-label">${icon('sparkles', { size: 16 })} On demand ${icon('arrow-right', { size: 16 })}</span>
         <div class="marquee">
           <div class="marquee-track">
-            ${[0, 1].map((copy) => `<ul class="logos" ${copy ? 'aria-hidden="true"' : ''}>${TECH.map((name) => `<li class="logo">${name}</li>`).join('')}</ul>`).join('')}
+            ${[0, 1].map((copy) => `<ul class="logos" ${copy ? 'aria-hidden="true"' : ''}>${OFFERINGS.map(([name, ico]) => `<li class="logo">${icon(ico, { size: 22 })}${name}</li>`).join('')}</ul>`).join('')}
           </div>
         </div>
       </div>

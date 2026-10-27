@@ -307,12 +307,18 @@ textarea { resize: vertical; min-height: 110px; }
 .hero + .strip { margin-top: 0; }
 .strip { background: var(--sky-light); padding-block: 26px; }
 .strip-inner { display: flex; align-items: center; gap: 24px; }
-.strip-label { flex: none; font-size: .82rem; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.strip-label { flex: none; display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; background: var(--p900); color: #fff; font-size: .8rem; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; }
+.strip-label .icon:first-child { color: var(--p300); }
+[data-theme="dark"] .strip-label { background: var(--p500); }
 .marquee { flex: 1; min-width: 0; overflow: hidden; mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
-.marquee-track { display: flex; width: max-content; animation: marquee 40s linear infinite; }
+.marquee-track { display: flex; width: max-content; animation: marquee 55s linear infinite; }
 .marquee:hover .marquee-track { animation-play-state: paused; }
-.logos { display: flex; gap: 48px; list-style: none; margin: 0; padding: 0 36px 0 0; }
-.logo { display: inline-flex; align-items: center; gap: 8px; font-family: var(--heading); font-weight: 700; font-size: 1.05rem; color: #000; white-space: nowrap; }
+.logos { display: flex; align-items: center; list-style: none; margin: 0; padding: 0; }
+.logo { display: inline-flex; align-items: center; gap: 10px; font-family: var(--heading); font-weight: 700; font-size: 1.05rem; color: #000; white-space: nowrap; }
+.logo .icon { color: var(--p500); }
+/* A small lavender dot after every item (including the last, so the loop joins seamlessly). */
+.logo::after { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--p300); margin: 0 32px; }
+[data-theme="dark"] .logo .icon { color: var(--p300); }
 @keyframes marquee { to { transform: translateX(-50%); } }
 /* Dark theme (set on <html data-theme>) */
 [data-theme="dark"] .logo { color: var(--text); }
