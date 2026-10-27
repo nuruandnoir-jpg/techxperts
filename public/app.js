@@ -123,6 +123,28 @@ function devCard(d) {
 const menuBtn = document.querySelector('.menu-btn');
 const topActions = document.getElementById('top-actions');
 
+// ---------- theme ----------
+
+const darkQuery = matchMedia('(prefers-color-scheme: dark)');
+const currentTheme = () => document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  const btn = document.querySelector('.theme-toggle');
+  if (btn) {
+    const dark = theme === 'dark';
+    btn.textContent = dark ? '☀' : '☾';
+    btn.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+    btn.title = btn.getAttribute('aria-label');
+  }
+}
+function toggleTheme() {
+  const next = currentTheme() === 'dark' ? 'light' : 'dark';
+  safeSet('tx_theme', next);
+  applyTheme(next);
+}
+// Follow the device setting until the viewer picks a theme themselves.
+darkQuery.addEventListener('change', (e) => { if (!safeGet('tx_theme')) applyTheme(e.matches ? 'dark' : 'light'); });
+
 function renderNav() {
   const u = state.user;
   const links = [
@@ -140,7 +162,9 @@ function renderNav() {
   const ai = !u || u.role === 'client'
     ? `<a class="split-btn" href="#/new"><span class="ico" aria-hidden="true">✦</span><span class="lbl">AI Assistant</span></a>`
     : `<a class="split-btn" href="#/dashboard"><span class="ico" aria-hidden="true">▤</span><span class="lbl">Job board</span></a>`;
-  topActions.innerHTML = account + ai;
+  topActions.innerHTML = `<button type="button" class="theme-toggle"></button>${account}${ai}`;
+  topActions.querySelector('.theme-toggle').addEventListener('click', toggleTheme);
+  applyTheme(currentTheme());
 }
 
 function setMenu(open) {
