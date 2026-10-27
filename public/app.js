@@ -130,48 +130,36 @@ const EXAMPLES = [
 
 async function viewHome() {
   const [stats, { developers }] = await Promise.all([api('/stats'), api('/developers?available=true')]);
-  const featured = [...developers].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))[0];
   app.innerHTML = `
-    <section class="hero">
-      <div class="hero-grid">
-        <div class="hero-copy">
-          <span class="eyebrow"><span class="dot"></span> ${stats.available} developers available now</span>
-          <h1><span class="soft">Code &amp; AI,</span> backed by <span class="hl">experts</span></h1>
-          <p class="lead">On-demand developers for coding, AI, cloud and site maintenance. Describe the job in plain words, our AI scopes it, and you're matched in minutes.</p>
-          <form class="searchbar" id="hero-form" role="search">
-            <input id="hero-desc" placeholder="What do you need? e.g. fix my slow WordPress site" required minlength="15" aria-label="Describe what you need" />
-            <button class="btn primary caps">Find a developer</button>
-          </form>
-          <div class="chips">${EXAMPLES.map((e) => `<button type="button" class="chip">${esc(e)}</button>`).join('')}</div>
-          <div class="hero-tiles">
-            <a class="tile video" href="#/#how" aria-label="See how it works">
-              <span><span class="k">const</span> brief = <span class="k">await</span> <span class="f">ai</span>.scope(job);<br><span class="k">const</span> dev = match(brief);<br>dev.<span class="f">ship</span>(<span class="s">'✓'</span>);</span>
-              <span class="play" aria-hidden="true">▶</span>
-              <span class="cap">See how it works</span>
-            </a>
-            <div class="tile stat">
-              <div class="avatars">${developers.slice(0, 3).map((d) => avatar(d)).join('')}<a class="arrow" href="#/developers" aria-label="Browse developers">↗</a></div>
-              <b>Over ${Math.floor(developers.reduce((n, d) => n + d.jobsCompleted, 0) / 10) * 10}</b>
-              <span>jobs delivered, rated ${stats.avgRating ?? '4.8'}★ on average</span>
-            </div>
+    <section class="hero bleed">
+      <div class="hero-media">
+        <picture>
+          <source media="(max-width: 900px)" srcset="/images/hero-sm.jpg" />
+          <img src="/images/hero.jpg" alt="Two developers reviewing a project together at a computer" width="1800" height="1198" fetchpriority="high" />
+        </picture>
+        <span class="float purple" style="top:14%;right:5%">AI-scoped in seconds</span>
+        <span class="float orange" style="bottom:12%;right:8%">Emergency fixes in &lt; 1 hr</span>
+      </div>
+      <div class="hero-copy">
+        <span class="eyebrow"><span class="dot"></span> ${stats.available} developers available now</span>
+        <h1><span class="soft">Code &amp; AI,</span> backed by <span class="hl">experts</span></h1>
+        <p class="lead">On-demand developers for coding, AI, cloud and site maintenance. Describe the job in plain words, our AI scopes it, and you're matched in minutes.</p>
+        <form class="searchbar" id="hero-form" role="search">
+          <input id="hero-desc" placeholder="What do you need? e.g. fix my slow WordPress site" required minlength="15" aria-label="Describe what you need" />
+          <button class="btn primary caps">Find a developer</button>
+        </form>
+        <div class="chips">${EXAMPLES.map((e) => `<button type="button" class="chip">${esc(e)}</button>`).join('')}</div>
+        <div class="hero-tiles">
+          <a class="tile video" href="#/#how" aria-label="See how it works">
+            <span><span class="k">const</span> brief = <span class="k">await</span> <span class="f">ai</span>.scope(job);<br><span class="k">const</span> dev = match(brief);<br>dev.<span class="f">ship</span>(<span class="s">'✓'</span>);</span>
+            <span class="play" aria-hidden="true">▶</span>
+            <span class="cap">See how it works</span>
+          </a>
+          <div class="tile stat">
+            <div class="avatars">${developers.slice(0, 3).map((d) => avatar(d)).join('')}<a class="arrow" href="#/developers" aria-label="Browse developers">↗</a></div>
+            <b>Over ${Math.floor(developers.reduce((n, d) => n + d.jobsCompleted, 0) / 10) * 10}</b>
+            <span>jobs delivered, rated ${stats.avgRating ?? '4.8'}★ on average</span>
           </div>
-        </div>
-        <div class="visual panel" aria-hidden="true">
-          <span class="confetti c1" style="top:14%;left:18%"></span>
-          <span class="confetti c2" style="top:8%;left:62%"></span>
-          <span class="confetti c3" style="top:30%;right:4%"></span>
-          <span class="confetti c4" style="top:52%;left:6%"></span>
-          <span class="confetti c2" style="bottom:30%;right:10%"></span>
-          <span class="float orange" style="top:34%;left:4%">Emergency fixes in &lt; 1 hr</span>
-          <span class="float purple" style="top:14%;right:6%">AI-scoped in seconds</span>
-          ${featured ? `
-          <div class="feature-card">
-            ${avatar(featured)}
-            <h3 style="margin:0">${esc(featured.name)}</h3>
-            <div class="muted" style="font-size:.88rem">${esc(featured.headline)}</div>
-            <div style="margin-top:8px;font-size:.9rem">${featured.rating ? `${stars(featured.rating)} ${featured.rating} · ` : ''}$${featured.hourlyRate}/hr</div>
-            <div class="code-win"><div class="dots"><i></i><i></i><i></i></div><span class="k">const</span> fix = <span class="k">await</span> <span class="f">expert</span>.<span class="f">ship</span>(<span class="s">'your-task'</span>);</div>
-          </div>` : ''}
         </div>
       </div>
     </section>
