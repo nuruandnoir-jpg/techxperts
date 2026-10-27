@@ -1,4 +1,5 @@
 // TechXperts single-page app: hash routing, a tiny API client and view renderers.
+import { icon } from './icons.js';
 
 const app = document.getElementById('app');
 const nav = document.getElementById('nav');
@@ -67,7 +68,7 @@ function toast(text) {
 
 const go = (hash) => { location.hash = hash; };
 
-const ICONS = { web: '⌘', ai: '✦', maintenance: '⚙', devops: '☁', consulting: '◎' };
+const SERVICE_ICONS = { web: 'code', ai: 'ai', maintenance: 'wrench', devops: 'cloud', consulting: 'bulb' };
 const SERVICE_COPY = {
   web: 'Websites, web apps and mobile apps.',
   ai: 'Chatbots, AI tools and automation.',
@@ -83,7 +84,7 @@ const initials = (name) => name.split(/\s+/).map((p) => p[0]).slice(0, 2).join('
 const AVATAR_COLORS = ['#3c096c', '#5a189a', '#7b2cbf', '#9d4edd', '#240046'];
 const avatarColor = (id) => AVATAR_COLORS[id % AVATAR_COLORS.length];
 const avatar = (d, cls = '') => `<div class="avatar ${cls}" style="background:${avatarColor(d.id)}" aria-hidden="true">${esc(initials(d.name))}</div>`;
-const stars = (r) => `<span class="stars" aria-label="${r} out of 5">${'★'.repeat(Math.round(r))}${'☆'.repeat(5 - Math.round(r))}</span>`;
+const stars = (r) => `<span class="stars" role="img" aria-label="${r} out of 5 stars">${[0, 1, 2, 3, 4].map((i) => icon('star', { size: 16, cls: i < Math.round(r) ? 'on' : '' })).join('')}</span>`;
 const badge = (value, label = value) => `<span class="badge ${esc(value)}">${esc(label)}</span>`;
 const timeAgo = (iso) => {
   const s = (Date.now() - new Date(`${iso.replace(' ', 'T')}Z`).getTime()) / 1000;
@@ -128,6 +129,7 @@ function devCard(d) {
 
 const menuBtn = document.querySelector('.menu-btn');
 const topActions = document.getElementById('top-actions');
+menuBtn.querySelector('.ico').innerHTML = icon('menu');
 
 // ---------- theme ----------
 
@@ -138,7 +140,7 @@ function applyTheme(theme) {
   const btn = document.querySelector('.theme-toggle');
   if (btn) {
     const dark = theme === 'dark';
-    btn.textContent = dark ? '☀' : '☾';
+    btn.innerHTML = icon(dark ? 'sun' : 'moon');
     btn.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
     btn.title = btn.getAttribute('aria-label');
   }
@@ -166,8 +168,8 @@ function renderNav() {
     ? `<a class="top-link" href="#/dashboard">Dashboard</a>`
     : `<a class="top-link" href="#/login">Sign in</a>`;
   const ai = !u || u.role === 'client'
-    ? `<a class="split-btn" href="#/new"><span class="ico" aria-hidden="true">✦</span><span class="lbl">AI Assistant</span></a>`
-    : `<a class="split-btn" href="#/dashboard"><span class="ico" aria-hidden="true">▤</span><span class="lbl">Job board</span></a>`;
+    ? `<a class="split-btn" href="#/new"><span class="ico">${icon('sparkles', { size: 18 })}</span><span class="lbl">AI Assistant</span></a>`
+    : `<a class="split-btn" href="#/dashboard"><span class="ico">${icon('briefcase', { size: 18 })}</span><span class="lbl">Job board</span></a>`;
   topActions.innerHTML = `<button type="button" class="theme-toggle"></button>${account}${ai}`;
   topActions.querySelector('.theme-toggle').addEventListener('click', toggleTheme);
   applyTheme(currentTheme());
@@ -176,7 +178,7 @@ function renderNav() {
 function setMenu(open) {
   nav.classList.toggle('open', open);
   menuBtn.setAttribute('aria-expanded', open);
-  menuBtn.querySelector('.ico').textContent = open ? '✕' : '☰';
+  menuBtn.querySelector('.ico').innerHTML = icon(open ? 'close' : 'menu');
 }
 menuBtn.addEventListener('click', () => setMenu(!nav.classList.contains('open')));
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false); });
@@ -192,12 +194,8 @@ const EXAMPLES = [
   ['Speed up my site', 'My website is slow and needs speeding up'],
 ];
 
-// Tech shown in the scrolling strip: [name, glyph]
-const TECH = [
-  ['React', '⚛'], ['Next.js', 'N'], ['Node.js', '⬢'], ['Python', 'Py'], ['Claude AI', '✦'], ['OpenAI', '◎'],
-  ['AWS', '☁'], ['Google Cloud', 'G'], ['Docker', '▣'], ['WordPress', 'W'], ['Shopify', 'S'], ['Stripe', '$'],
-  ['Figma', '◐'], ['Flutter', '◆'], ['PostgreSQL', 'Pg'],
-];
+// Tech shown in the scrolling strip.
+const TECH = ['React', 'Next.js', 'Node.js', 'Python', 'Claude AI', 'OpenAI', 'AWS', 'Google Cloud', 'Docker', 'WordPress', 'Shopify', 'Stripe', 'Figma', 'Flutter', 'PostgreSQL'];
 
 async function viewHome() {
   const [stats, { developers }] = await Promise.all([load('/stats'), load('/developers?available=true')]);
@@ -213,14 +211,14 @@ async function viewHome() {
           <a class="btn primary caps" href="${state.user?.role === 'developer' ? '#/dashboard' : '#/new'}">Build my team</a>
           <a class="btn outline caps" href="#/developers">Find developers</a>
         </div>
-        <p class="dev-link">Are you a developer? <a href="#/signup?role=developer">Join here →</a></p>
+        <p class="dev-link">Are you a developer? <a href="#/signup?role=developer">Join here ${icon('arrow-right', { size: 16 })}</a></p>
         <div class="hero-tiles">
           <button type="button" class="tile video" id="play-video" aria-label="Play video">
             <img src="/images/hero-sm.jpg" alt="Two developers working together at a computer" loading="lazy" />
-            <span class="play" aria-hidden="true">▶</span>
+            <span class="play">${icon('play', { size: 20 })}</span>
           </button>
           <div class="tile stat">
-            <div class="avatars">${developers.slice(0, 2).map((d) => avatar(d)).join('')}<a class="arrow" href="#/developers" aria-label="Browse developers">↗</a></div>
+            <div class="avatars">${developers.slice(0, 2).map((d) => avatar(d)).join('')}<a class="arrow" href="#/developers" aria-label="Browse developers">${icon('arrow-up-right', { size: 16 })}</a></div>
             <b>Over ${Math.floor(developers.reduce((n, d) => n + d.jobsCompleted, 0) / 10) * 10}</b>
             <span>jobs delivered by our teams</span>
           </div>
@@ -233,7 +231,7 @@ async function viewHome() {
         <span class="strip-label">We work with</span>
         <div class="marquee">
           <div class="marquee-track">
-            ${[0, 1].map((copy) => `<ul class="logos" ${copy ? 'aria-hidden="true"' : ''}>${TECH.map(([name, glyph]) => `<li class="logo"><i>${glyph}</i>${name}</li>`).join('')}</ul>`).join('')}
+            ${[0, 1].map((copy) => `<ul class="logos" ${copy ? 'aria-hidden="true"' : ''}>${TECH.map((name) => `<li class="logo">${name}</li>`).join('')}</ul>`).join('')}
           </div>
         </div>
       </div>
@@ -244,7 +242,7 @@ async function viewHome() {
       <div class="grid">
         ${state.catalog.categories.map((c) => `
           <div class="card">
-            <div class="service-icon">${ICONS[c.id] ?? '•'}</div>
+            <div class="service-icon">${icon(SERVICE_ICONS[c.id] ?? 'sparkles', { size: 22 })}</div>
             <h3>${esc(c.label)}</h3>
             <p class="muted">${esc(SERVICE_COPY[c.id] ?? '')}</p>
             <div class="tags">${c.skills.slice(0, 4).map((s) => `<span class="tag">${esc(s)}</span>`).join('')}</div>
@@ -257,10 +255,10 @@ async function viewHome() {
         <span class="confetti c1" style="top:10%;left:30%"></span>
         <span class="confetti c3" style="top:20%;right:14%"></span>
         <span class="confetti c4" style="top:44%;left:4%"></span>
-        <span class="float sky" style="top:26%;left:2%">Team matched</span>
+        <span class="float sky" style="top:26%;left:2%"><span class="tick">${icon('check', { size: 12 })}</span>Team matched</span>
         <div class="scope-card">
           <div class="q">“Build a booking app for my salon by March 1.”</div>
-          <div class="ai-box" style="margin:0"><strong>✦ AI brief</strong>
+          <div class="ai-box" style="margin:0"><strong>${icon('sparkles', { size: 16 })} AI brief</strong>
             <div class="tags" style="margin-top:8px"><span class="tag">Team of 2</span><span class="tag">React</span><span class="tag">Node.js</span></div>
             <p class="hint" style="margin:8px 0 0">Due in 3 weeks · about 60 hours</p>
           </div>
@@ -278,7 +276,7 @@ async function viewHome() {
     </section>
 
     <section class="section">
-      <div class="section-head"><div><h2>Developers ready to join your team</h2></div><a class="btn" href="#/developers">See all →</a></div>
+      <div class="section-head"><div><h2>Developers ready to join your team</h2></div><a class="btn" href="#/developers">See all ${icon('arrow-right', { size: 16 })}</a></div>
       <div class="grid">${developers.slice(0, 3).map(devCard).join('')}</div>
     </section>
 
@@ -310,7 +308,7 @@ function openVideo() {
   const dialog = document.createElement('dialog');
   dialog.className = 'video-dialog';
   dialog.innerHTML = `
-    <button type="button" class="video-close" aria-label="Close video">✕</button>
+    <button type="button" class="video-close" aria-label="Close video">${icon('close')}</button>
     <video src="/media/hero.mp4" controls autoplay playsinline poster="/media/hero-poster.jpg"></video>`;
   document.body.append(dialog);
   const close = () => dialog.close();
@@ -412,7 +410,7 @@ function viewAuth(mode, params) {
             <button type="button" role="tab" data-role="developer" aria-selected="${role === 'developer'}" class="${role === 'developer' ? 'on' : ''}">I'm a developer</button>
           </div>
           <h2>${perks.title}</h2>
-          <ul class="perks">${perks.perks.map((p) => `<li>${p}</li>`).join('')}</ul>
+          <ul class="perks">${perks.perks.map((p) => `<li><span class="tick">${icon('check', { size: 14 })}</span>${p}</li>`).join('')}</ul>
         </aside>
         <div class="card auth-card">
           <div class="segmented auth-tabs" role="tablist" aria-label="Sign in or create account">
@@ -557,7 +555,7 @@ async function viewDashboard(params) {
           <div class="field"><label for="skills">Skills <span class="hint">(comma separated)</span></label><input id="skills" name="skills" value="${esc(me.skills.join(', '))}" /></div>
           <div class="field"><label for="hourlyRate">Hourly rate (USD)</label><input id="hourlyRate" name="hourlyRate" type="number" min="5" max="1000" value="${me.hourlyRate}" /></div>
         </div>
-        <div class="actions"><button class="btn primary">Save profile</button><a href="#/developers/${me.id}">View public profile →</a></div>
+        <div class="actions"><button class="btn primary">Save profile</button><a href="#/developers/${me.id}">View public profile ${icon('arrow-right', { size: 16 })}</a></div>
       </form>`;
     document.getElementById('profile-form').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -590,7 +588,7 @@ function viewNewRequest() {
           <textarea id="description" name="description" required minlength="15" placeholder="What's the problem or goal? Include links, tech you use and any deadline.">${esc(draft)}</textarea>
           <div class="chips">${EXAMPLES.map(([label, text]) => `<button type="button" class="chip" data-text="${esc(text)}">${esc(label)}</button>`).join('')}</div>
         </div>
-        <button type="button" class="btn" id="scope-btn">✦ Scope with AI</button>
+        <button type="button" class="btn" id="scope-btn">${icon('sparkles', { size: 18 })} Scope with AI</button>
         <div id="ai-out"></div>
         <div class="field" style="margin-top:20px"><label for="title">Title</label><input id="title" name="title" required minlength="5" maxlength="120" /></div>
         <div class="row">
@@ -630,12 +628,12 @@ function viewNewRequest() {
       form.teamSize.value = String(scope.teamSize ?? 1);
       form.aiSummary.value = scope.summary;
       document.getElementById('ai-out').innerHTML = `
-        <div class="ai-box"><strong>✦ AI brief</strong> <span class="hint">(${scope.source === 'claude' ? 'by Claude' : 'quick estimate'})</span>
+        <div class="ai-box"><strong>${icon('sparkles', { size: 16 })} AI brief</strong> <span class="hint">(${scope.source === 'claude' ? 'by Claude' : 'quick estimate'})</span>
           <p style="margin:6px 0 0">${esc(scope.summary)}</p>
           <p class="hint" style="margin:6px 0 0">We filled in the details below — adjust anything before posting.</p></div>`;
     } catch (err) { toast(err.message); }
     scopeBtn.disabled = false;
-    scopeBtn.textContent = '✦ Re-scope with AI';
+    scopeBtn.innerHTML = `${icon('sparkles', { size: 18 })} Re-scope with AI`;
   }
   scopeBtn.addEventListener('click', runScope);
   if (draft) runScope();
@@ -671,14 +669,14 @@ async function viewRequest(id) {
 
   const participant = isClient || isDev || u.role === 'admin';
   app.innerHTML = `
-    <p><a href="#/dashboard">← Dashboard</a></p>
+    <p><a class="back-link" href="#/dashboard">${icon('arrow-left', { size: 16 })} Dashboard</a></p>
     <div class="split">
       <div>
         <div class="card">
           <div class="actions" style="justify-content:space-between">${badge(r.status, STATUS_LABEL[r.status])} <span class="hint">#${r.id} · posted ${timeAgo(r.createdAt)}</span></div>
           <h1 style="font-size:1.7rem;margin-top:12px">${esc(r.title)}</h1>
           <p style="white-space:pre-wrap">${esc(r.description)}</p>
-          ${r.aiSummary ? `<div class="ai-box"><strong>✦ AI brief</strong><p style="margin:6px 0 0">${esc(r.aiSummary)}</p></div>` : ''}
+          ${r.aiSummary ? `<div class="ai-box"><strong>${icon('sparkles', { size: 16 })} AI brief</strong><p style="margin:6px 0 0">${esc(r.aiSummary)}</p></div>` : ''}
           ${r.status !== 'cancelled' ? `
             <div class="progress">${STATUS_FLOW.map((_, i) => `<div class="${i <= step ? 'on' : ''}"></div>`).join('')}</div>
             <div class="progress-labels">${STATUS_FLOW.map((s) => `<span>${STATUS_LABEL[s]}</span>`).join('')}</div>` : ''}
@@ -713,7 +711,7 @@ async function viewRequest(id) {
         ${isClient && r.status === 'completed' && !review ? `
           <form class="card" id="review-form">
             <h2 style="font-size:1.2rem">Rate ${r.team.length > 1 ? 'your team' : esc(r.team[0]?.name ?? 'the developer')}</h2>
-            <div class="star-input" id="star-input">${[1, 2, 3, 4, 5].map((n) => `<button type="button" data-star="${n}" aria-label="${n} stars">★</button>`).join('')}</div>
+            <div class="star-input" id="star-input">${[1, 2, 3, 4, 5].map((n) => `<button type="button" data-star="${n}" aria-label="${n} stars">${icon('star', { size: 28 })}</button>`).join('')}</div>
             <div class="field" style="margin-top:12px"><textarea name="comment" placeholder="How did it go? (optional)"></textarea></div>
             <button class="btn primary">Submit review</button>
           </form>` : ''}
@@ -732,7 +730,7 @@ async function viewRequest(id) {
         </dl>
         <ul class="team-list">
           ${r.team.map((d) => `<li>${avatar(d)}<div><a class="dev-name" href="#/developers/${d.id}">${esc(d.name)}</a>${d.id === r.developer?.id && r.team.length > 1 ? ' <span class="tag">Lead</span>' : ''}<div class="hint">${esc(d.headline ?? '')}</div></div></li>`).join('')}
-          ${Array.from({ length: Math.max(0, spotsLeft) }, () => '<li class="open-spot"><div class="avatar" aria-hidden="true">+</div><div class="hint">Open spot</div></li>').join('')}
+          ${Array.from({ length: Math.max(0, spotsLeft) }, () => `<li class="open-spot"><div class="avatar" aria-hidden="true">${icon('plus', { size: 18 })}</div><div class="hint">Open spot</div></li>`).join('')}
         </ul>
         ${r.skills.length ? `<div class="tags" style="margin-top:16px">${r.skills.map((s) => `<span class="tag">${esc(s)}</span>`).join('')}</div>` : ''}
       </aside>

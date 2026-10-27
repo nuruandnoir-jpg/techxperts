@@ -29,6 +29,7 @@ Your tech team, on your timeline. Clients describe what they're building, set a 
 - **Auth:** PBKDF2 password hashing and HMAC-signed bearer tokens, both using Web Crypto.
 - **AI:** Claude (`claude-opus-5-5`) through the Anthropic SDK with structured outputs. Without an API key, or if the call fails, it falls back to a built-in keyword heuristic.
 - **Frontend:** a single-page app in plain HTML, CSS and JS, with no build step.
+- **Icons:** [Heroicons](https://heroicons.com) (MIT). `npm run icons` regenerates `public/icons.js` from the icon list in `scripts/build-icons.js`.
 
 ## Deploying to Cloudflare
 
