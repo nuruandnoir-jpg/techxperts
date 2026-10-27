@@ -85,6 +85,13 @@ async function setup(env) {
   const db = env.DB;
   if (!db) throw new Error('No D1 database is bound as DB. Check the d1_databases binding in wrangler.toml.');
   await db.batch(SCHEMA_STATEMENTS.map((sql) => db.prepare(sql)));
+  // Added after launch: developers marked as vetted (interviewed) show a badge. SQLite has no
+  // "ADD COLUMN IF NOT EXISTS", so a duplicate-column error just means it's already there.
+  try {
+    await run(db, 'ALTER TABLE developer_profiles ADD COLUMN vetted INTEGER NOT NULL DEFAULT 0');
+  } catch (err) {
+    if (!/duplicate column/i.test(String(err?.message))) throw err;
+  }
 
   if (env.DEMO_DATA === 'true' && !(await one(db, 'SELECT 1 FROM users LIMIT 1'))) {
     try {
@@ -93,6 +100,9 @@ async function setup(env) {
       // Another isolate seeded at the same moment; its batch won and this one rolled back.
       if (!/UNIQUE/i.test(String(err?.message))) throw err;
     }
+  }
+  if (env.DEMO_DATA === 'true') {
+    await run(db, "UPDATE developer_profiles SET vetted = 1 WHERE vetted = 0 AND user_id IN (SELECT id FROM users WHERE email LIKE '%@techxperts.dev')");
   }
 
   if (env.AUTH_SECRET) return env.AUTH_SECRET;

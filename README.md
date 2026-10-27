@@ -19,6 +19,10 @@ Your tech team, on your timeline. Clients describe what they're building, set a 
 - A minimal landing page: a photo hero with a hire/join finder, a rotating "On demand" line, role photos, "How it works" in one line, pricing packages, a team builder that prices a custom team, and a developer call to action. Prices (senior hourly rates by role, mid/expert multipliers, packages and the promises row) are set in `ROLE_RATES`, `LEVELS`, `PACKAGES` and `PROMISES` in `public/app.js`.
 - **Xpert, the live mascot** (`public/xpert.js`): sits on the hero finder and follows the pointer, waves when poked, smiles at a good idea, thinks while the AI scopes a job, celebrates (with confetti) when a job goes live, and dozes on the not-found and offline screens. Motion is skipped when the visitor prefers reduced motion.
 - **Team forming:** in the team builder, each person you add drops into one of five seats; on a job page, new team members pop into place and open seats gently pulse.
+- **World map** of where clients and experts are, drawn from a dot grid (`public/images/world-dots.svg`, made from the public-domain Natural Earth land outline) with glowing city pins and arcs.
+- **How it works timeline:** Idea → Team → Launch, filling in as you scroll.
+- **Role icons** in the team builder, its seats and the role photos.
+- **Vetted & interviewed badge** on developer cards and profiles. It only shows for developers marked as vetted: new sign-ups start unvetted, and developers can't set it themselves. To mark one after their interviews, run this in the D1 console (Cloudflare dashboard → D1 → techxperts → Console): `UPDATE developer_profiles SET vetted = 1 WHERE user_id = (SELECT id FROM users WHERE email = 'dev@example.com');`. With `DEMO_DATA = "true"`, the demo developers are marked vetted.
 - A developer directory you can search and filter.
 - Role-based access: clients only see their own jobs. Developers see recruiting jobs and jobs they're on. Only the client and the team can message in a job room.
 - Light and dark themes, and a responsive layout down to phone width.

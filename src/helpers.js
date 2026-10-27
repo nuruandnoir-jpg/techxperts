@@ -31,6 +31,7 @@ export function developerView(row) {
     rating: row.rating_count ? Math.round((row.rating_total / row.rating_count) * 10) / 10 : null,
     ratingCount: row.rating_count,
     jobsCompleted: row.jobs_completed,
+    vetted: Boolean(row.vetted),
     memberSince: row.created_at,
   };
 }

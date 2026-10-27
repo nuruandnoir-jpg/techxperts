@@ -47,6 +47,18 @@ test('register, login and fetch profile', async () => {
   assert.deepEqual(profile.data.developer.categories, ['ai']);
 });
 
+test('only vetted developers carry the vetted flag, and developers cannot set it themselves', async () => {
+  const reg = await api('/auth/register', {
+    body: { role: 'developer', name: 'New Dev', email: 'new@example.com', password: 'password123', skills: ['Go'] },
+  });
+  assert.equal((await api('/developers/me', { token: reg.data.token })).data.developer.vetted, false);
+  await api('/developers/me', { token: reg.data.token, method: 'PATCH', body: { vetted: true, headline: 'Go developer' } });
+  assert.equal((await api('/developers/me', { token: reg.data.token })).data.developer.vetted, false);
+
+  const { data } = await api('/developers');
+  assert.equal(data.developers.find((d) => d.name === 'Amara Okafor').vetted, true); // demo developers are vetted
+});
+
 test('rejects unauthenticated and wrong-role access', async () => {
   assert.equal((await api('/requests')).status, 401);
   const devToken = await login('amara@techxperts.dev');

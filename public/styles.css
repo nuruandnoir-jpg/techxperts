@@ -897,3 +897,58 @@ input:focus, textarea:focus, select:focus { border-color: var(--p400); outline: 
 .finder-tabs button.on { background: #fff; border-color: #fff; color: #3c096c; box-shadow: 0 6px 16px rgb(10 0 30 / 22%); }
 .finder-tabs button.on .icon { background: linear-gradient(135deg, #9d4edd, #7b2cbf); color: #fff; }
 @media (max-width: 420px) { .finder-tabs button { font-size: .82rem; padding: 3px 12px 3px 3px; gap: 6px; } .finder-tabs button .icon { display: inline-block; width: 24px; height: 24px; } }
+
+/* Role icons: a small purple bubble used in the team builder and on the role photos */
+.role-ico { display: inline-grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 11px; background: color-mix(in srgb, var(--p400) 16%, transparent); color: var(--p600); }
+[data-theme="dark"] .role-ico { background: rgb(199 125 255 / 16%); color: var(--p200); }
+.builder-name { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.role-caption { display: flex; align-items: center; gap: 10px; }
+.role-caption .role-ico { background: rgb(255 255 255 / 92%); color: var(--p600); box-shadow: 0 4px 10px rgb(16 0 43 / 25%); }
+.seat.filled .icon { width: 20px; height: 20px; }
+
+/* Vetted & interviewed badge on developer cards and profiles (only developers marked vetted) */
+.vetted { width: max-content; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; padding: 3px 10px 3px 6px; border-radius: 999px; font-size: .75rem; font-weight: 700;
+  background: color-mix(in srgb, var(--p400) 14%, transparent); color: var(--p600); }
+.vetted .icon { color: var(--p500); }
+[data-theme="dark"] .vetted { background: rgb(199 125 255 / 14%); color: var(--p200); }
+[data-theme="dark"] .vetted .icon { color: var(--p300); }
+
+/* World map: dotted continents, glowing city pins and arcs that draw between them */
+.world { text-align: center; }
+.world h2 { margin-bottom: 6px; }
+.world > .muted { margin: 0 0 28px; letter-spacing: .02em; }
+.world-map { position: relative; max-width: 1000px; margin: 0 auto; }
+.world-map img { display: block; width: 100%; height: auto; opacity: .32; }
+[data-theme="dark"] .world-map img { opacity: .4; }
+.world-arcs { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.world-arcs path { fill: none; stroke: var(--p500); stroke-width: 1.6; stroke-linecap: round; vector-effect: non-scaling-stroke; stroke-dasharray: 1; stroke-dashoffset: 1; opacity: .75;
+  animation: arc-draw 6s ease-in-out infinite; animation-delay: var(--d); }
+[data-theme="dark"] .world-arcs path { stroke: var(--p300); }
+@keyframes arc-draw { 0% { stroke-dashoffset: 1; opacity: 0; } 10% { opacity: .8; } 45%, 70% { stroke-dashoffset: 0; opacity: .8; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+.pin { position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--p500); box-shadow: 0 0 0 3px color-mix(in srgb, var(--p300) 45%, transparent), 0 0 14px var(--p400); }
+.pin::after { content: ''; position: absolute; inset: -5px; border-radius: 50%; border: 2px solid var(--p400); animation: pin-pulse 2.4s ease-out infinite; animation-delay: var(--d); }
+@keyframes pin-pulse { 0% { transform: scale(.6); opacity: .9; } 100% { transform: scale(2.4); opacity: 0; } }
+.pin b { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); white-space: nowrap; padding: 3px 9px; border-radius: 999px; font-size: .72rem; font-weight: 700;
+  background: var(--surface); color: var(--p700); border: 1px solid var(--border); box-shadow: 0 4px 12px rgb(16 0 43 / 10%); }
+[data-theme="dark"] .pin b { color: var(--p200); }
+@media (max-width: 640px) { .pin b { display: none; } .pin { width: 8px; height: 8px; margin: -4px 0 0 -4px; } .pin:not(.labelled)::after { display: none; } }
+
+/* How it works: a timeline whose rail fills as you scroll */
+.how-track { --p: 0; max-width: 640px; margin: 44px auto 0; position: relative; }
+.how-rail { position: absolute; left: 16.66%; right: 16.66%; top: 9px; height: 3px; border-radius: 3px; background: var(--border); overflow: hidden; }
+.how-fill { height: 100%; width: calc(var(--p) * 100%); background: linear-gradient(90deg, var(--p400), var(--p600)); border-radius: inherit; transition: width .15s linear; }
+.how-track ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); position: relative; }
+.how-track li { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.how-dot { width: 21px; height: 21px; border-radius: 50%; background: var(--surface); border: 3px solid var(--border); transition: border-color .3s, background .3s, transform .4s cubic-bezier(.3, 1.6, .5, 1); margin-bottom: 6px; }
+.how-track li.on .how-dot { border-color: var(--p500); background: var(--p500); box-shadow: 0 0 0 5px color-mix(in srgb, var(--p300) 35%, transparent); transform: scale(1.1); }
+.how-track b { font-size: .95rem; }
+.how-track small { color: var(--muted); font-size: .8rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .world-arcs path { animation: none; stroke-dashoffset: 0; opacity: .5; }
+  .pin::after { animation: none; display: none; }
+  .how-fill, .how-dot { transition: none; }
+}
+.builder-name .role-ico { width: 30px; height: 30px; border-radius: 10px; }
+.builder-name { gap: 10px; }
+.builder-name { flex: 1; }

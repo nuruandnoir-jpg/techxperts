@@ -107,6 +107,7 @@ function devCard(d) {
         <div>
           <div class="dev-name">${esc(d.name)}</div>
           <div class="muted" style="font-size:.9rem">${esc(d.headline)}</div>
+          ${d.vetted ? `<span class="vetted" title="Vetted and interviewed by Tech and AI Xperts">${icon('badge', { size: 16 })}Vetted &amp; interviewed</span>` : ''}
         </div>
       </div>
       <div class="tags">${d.skills.slice(0, 5).map((s) => `<span class="tag">${esc(s)}</span>`).join('')}</div>
@@ -245,11 +246,13 @@ const ROLE_PHOTOS_WIDE = [
 ];
 
 
+const CATEGORY_ICONS = { web: 'code', ai: 'ai', consulting: 'bulb', maintenance: 'shield', devops: 'cloud' };
+
 function rolePhoto([src, role, , category], width, height) {
   return `
     <a class="role-photo" href="#/developers?category=${category}">
       <img src="${src}" alt="" loading="lazy" width="${width}" height="${height}" />
-      <h3 class="role-caption">${role}</h3>
+      <h3 class="role-caption"><span class="role-ico">${icon(CATEGORY_ICONS[category], { size: 18 })}</span>${role}</h3>
     </a>`;
 }
 
@@ -281,7 +284,8 @@ const ROLE_RATES = [
   ['Full-stack developer', 45], ['Mobile developer', 48], ['AI engineer', 60], ['Cybersecurity expert', 60],
   ['Cloud & DevOps engineer', 55], ['UI/UX designer', 40], ['QA tester', 30], ['Tech consultant', 60],
 ];
-// Short label and colour for each role's seat in the team builder (same order as ROLE_RATES).
+// Icon, short label and colour for each role (same order as ROLE_RATES).
+const ROLE_ICONS = ['code', 'mobile', 'ai', 'shield', 'cloud', 'brush', 'bug', 'bulb'];
 const ROLE_SEATS = [['FS', '#7b2cbf'], ['MOB', '#5a189a'], ['AI', '#9d4edd'], ['SEC', '#3c096c'], ['OPS', '#240046'], ['UX', '#c77dff'], ['QA', '#7b2cbf'], ['TC', '#5a189a']];
 // [label, multiplier on the senior rate]
 const LEVELS = [['Mid-level', 0.78], ['Senior', 1], ['Expert / lead', 1.4]];
@@ -334,7 +338,7 @@ function pricingSection() {
           <ul>
             ${ROLE_RATES.map(([role, rate], i) => `
               <li>
-                <span class="builder-role">${role}<small id="rate-${i}">${usd(rate)}/hour</small></span>
+                <span class="builder-name"><span class="role-ico">${icon(ROLE_ICONS[i], { size: 18 })}</span><span class="builder-role">${role}<small id="rate-${i}">${usd(rate)}/hour</small></span></span>
                 <span class="stepper">
                   <button type="button" data-step="-1" data-role="${i}" aria-label="Remove a ${role}">&minus;</button>
                   <output id="count-${i}">0</output>
@@ -390,7 +394,7 @@ function bindPricing() {
       const seat = seats[i];
       if (!seat) return '<span class="seat"></span>';
       const [label, color] = ROLE_SEATS[seat.role];
-      return `<span class="seat filled ${seat.id === newId ? 'drop' : ''}" style="--c:${color}" title="${ROLE_RATES[seat.role][0]}">${label}</span>`;
+      return `<span class="seat filled ${seat.id === newId ? 'drop' : ''}" style="--c:${color}" title="${ROLE_RATES[seat.role][0]}">${icon(ROLE_ICONS[seat.role], { size: 20 })}<span class="sr-only">${label}</span></span>`;
     }).join('');
   };
   const hours = document.getElementById('b-hours');
@@ -439,6 +443,36 @@ function bindPricing() {
   });
   update();
   drawSeats();
+}
+
+// The world map on the home page. Pins are [x%, y%, label]; positions come from the same
+// equirectangular projection as /images/world-dots.svg.
+const WORLD_REGIONS = ['USA', 'UK', 'Europe', 'Africa', 'Middle East', 'Asia', 'Latin America'];
+const WORLD_PINS = {
+  'San Francisco': [16.0, 26.7], 'New York': [29.4, 24.5, 'USA'], Toronto: [27.9, 22.1], 'São Paulo': [37.1, 74.6, 'Latin America'],
+  London: [50.0, 16.0, 'UK & Europe'], Berlin: [53.7, 15.2], Lagos: [50.9, 51.2], Nairobi: [60.2, 57.3, 'Africa'],
+  Johannesburg: [57.8, 76.7], Cairo: [58.7, 32.8], Dubai: [65.4, 36.6, 'Middle East'], Bangalore: [71.6, 46.1, 'Asia'],
+  Singapore: [78.8, 55.2], Sydney: [92.0, 82.7],
+};
+// Animated links between client and expert cities.
+const WORLD_ARCS = [['Nairobi', 'London'], ['Lagos', 'New York'], ['Bangalore', 'Berlin'], ['São Paulo', 'San Francisco'], ['Dubai', 'Johannesburg'], ['Singapore', 'Sydney']];
+
+// "How it works" timeline: the rail fills as the section scrolls through the viewport.
+function bindHowTrack() {
+  const track = document.getElementById('how-track');
+  if (!track) return;
+  const steps = track.querySelectorAll('li');
+  const update = () => {
+    if (!track.isConnected) { window.removeEventListener('scroll', onScroll); return; }
+    const r = track.getBoundingClientRect();
+    const p = Math.min(1, Math.max(0, (innerHeight * 0.9 - r.top) / (innerHeight * 0.5)));
+    track.style.setProperty('--p', p.toFixed(3));
+    steps.forEach((li, i) => li.classList.toggle('on', p >= i / (steps.length - 1) - 0.01));
+  };
+  let queued = false;
+  const onScroll = () => { if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; update(); }); } };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  update();
 }
 
 async function viewHome() {
@@ -491,6 +525,24 @@ async function viewHome() {
       <div class="role-photos wide">${ROLE_PHOTOS_WIDE.map((r) => rolePhoto(r, 1200, 750)).join('')}</div>
     </section>
 
+    <section class="section world" aria-labelledby="world-title">
+      <h2 id="world-title">Clients and experts, worldwide</h2>
+      <p class="muted">${WORLD_REGIONS.join(' · ')}</p>
+      <div class="world-map">
+        <img src="/images/world-dots.svg" alt="" width="1000" height="356" loading="lazy" />
+        <svg class="world-arcs" viewBox="0 0 1000 356" preserveAspectRatio="none" aria-hidden="true">
+          ${WORLD_ARCS.map(([a, b], i) => {
+            const [x1, y1] = WORLD_PINS[a]; const [x2, y2] = WORLD_PINS[b];
+            const [px1, py1, px2, py2] = [x1 * 10, y1 * 3.56, x2 * 10, y2 * 3.56];
+            const lift = Math.hypot(px2 - px1, py2 - py1) * 0.35;
+            return `<path d="M${px1} ${py1} Q${(px1 + px2) / 2} ${Math.min(py1, py2) - lift} ${px2} ${py2}" style="--d:${i * 0.6}s" pathLength="1" />`;
+          }).join('')}
+        </svg>
+        ${Object.entries(WORLD_PINS).map(([city, [x, y, label]], i) => `
+          <span class="pin ${label ? 'labelled' : ''}" style="left:${x}%;top:${y}%;--d:${(i % 5) * 0.4}s" title="${city}">${label ? `<b>${label}</b>` : ''}</span>`).join('')}
+      </div>
+    </section>
+
     <section class="how-line bleed" id="how">
       <p class="how-kicker">How it works</p>
       <p class="how-statement">
@@ -498,6 +550,14 @@ async function viewHome() {
         <span><sup>ii</sup><em>Meet your team.</em></span>
         <span><sup>iii</sup><em>Launch on time.</em></span>
       </p>
+      <div class="how-track" id="how-track" aria-hidden="true">
+        <div class="how-rail"><div class="how-fill"></div></div>
+        <ol>
+          <li><span class="how-dot"></span><b>Idea</b><small>Day 1</small></li>
+          <li><span class="how-dot"></span><b>Team</b><small>Within days</small></li>
+          <li><span class="how-dot"></span><b>Launch</b><small>Your deadline</small></li>
+        </ol>
+      </div>
       <p class="how-note">From first message to finished product, all in one place.</p>
       <a class="how-link" href="${hireHref}">Start my project</a>
     </section>
@@ -534,6 +594,7 @@ async function viewHome() {
   bindPricing();
   startRotator(document.getElementById('ondemand-item'));
   bindHeroXpert();
+  bindHowTrack();
 }
 
 // Xpert in the hero: waves hello, then watches the pointer. It looks at the field while
@@ -598,7 +659,7 @@ async function viewDeveloper(id) {
         <div class="card">
           <div class="dev-top" style="margin-bottom:16px">
             ${avatar(d, 'lg')}
-            <div><h1 style="font-size:1.8rem;margin:0">${esc(d.name)}</h1><div class="muted">${esc(d.headline)}</div></div>
+            <div><h1 style="font-size:1.8rem;margin:0">${esc(d.name)}</h1><div class="muted">${esc(d.headline)}</div>${d.vetted ? `<span class="vetted" title="Vetted and interviewed by Tech and AI Xperts">${icon('badge', { size: 16 })}Vetted &amp; interviewed</span>` : ''}</div>
           </div>
           <p>${esc(d.bio)}</p>
           <div class="tags">${d.skills.map((s) => `<span class="tag">${esc(s)}</span>`).join('')}</div>

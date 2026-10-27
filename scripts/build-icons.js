@@ -21,6 +21,11 @@ const ICONS = [
   ['wrench', '24/outline/wrench-screwdriver'],
   ['cloud', '24/outline/cloud'],
   ['bulb', '24/outline/light-bulb'],
+  ['mobile', '24/outline/device-phone-mobile'],
+  ['shield', '24/outline/shield-check'],
+  ['brush', '24/outline/paint-brush'],
+  ['bug', '24/outline/bug-ant'],
+  ['badge', '20/solid/check-badge'],
 ];
 
 const entries = ICONS.map(([name, file]) => {
