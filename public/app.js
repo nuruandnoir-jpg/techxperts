@@ -426,7 +426,7 @@ async function viewHome() {
             <button type="button" role="tab" aria-selected="false" data-finder="join">${icon('code', { size: 18 })}Join as developer</button>
           </div>
           <form class="finder-body" id="finder-hire">
-            <input id="finder-text" placeholder="What do you need built? One expert or a whole team" aria-label="What do you need built?" required />
+            <input id="finder-text" placeholder="What do you need built?" aria-label="What do you need built?" required />
             <button class="btn primary go">Find my team${icon('arrow-right', { size: 18 })}</button>
           </form>
           <div class="finder-body" id="finder-join" hidden>

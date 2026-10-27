@@ -641,3 +641,27 @@ input:focus, textarea:focus, select:focus { border-color: var(--p400); outline: 
   .finder-body:not([hidden]) { animation: none; }
   .btn.go::after { display: none; }
 }
+
+/* Hero finder, modern version: frosted glass, slim pill switch, search field with the button inside */
+.finder { background: rgb(255 255 255 / 12%); -webkit-backdrop-filter: blur(16px) saturate(140%); backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgb(255 255 255 / 24%); border-radius: 26px; padding: 8px; box-shadow: 0 24px 60px rgb(10 0 30 / 35%); max-width: 600px; }
+.finder-tabs { background: rgb(16 0 43 / 38%); border-radius: 999px; padding: 4px; gap: 4px; }
+.finder-tabs::before { top: 4px; bottom: 4px; left: 4px; width: calc(50% - 6px); border-radius: 999px; background: #fff; box-shadow: 0 6px 16px rgb(0 0 0 / 22%); }
+.finder-tabs[data-active="join"]::before { transform: translateX(calc(100% + 4px)); }
+.finder-tabs button { border-radius: 999px; color: rgb(255 255 255 / 82%); font-weight: 600; padding: 10px 14px; }
+.finder-tabs button:not(.on):hover { color: #fff; }
+.finder-tabs button.on { color: #3c096c; }
+.finder-body { margin-top: 8px; background: #fff; border-radius: 999px; padding: 6px 6px 6px 22px; gap: 8px; }
+.finder-body input { border: 0; outline: none; background: transparent; padding: 12px 0; font-size: 1rem; }
+.finder-body input:focus { outline: none; }
+.finder-body:focus-within { box-shadow: 0 0 0 3px rgb(224 170 255 / 55%); }
+.finder-note { padding-left: 0; font-weight: 500; color: #574273; }
+.finder-body .btn.go { border: 0; border-radius: 999px; padding: 12px 22px; background: linear-gradient(135deg, #9d4edd, #7b2cbf); color: #fff;
+  box-shadow: 0 8px 20px rgb(123 44 191 / 40%); transition: transform .2s, box-shadow .2s; }
+.finder-body .btn.go:hover { transform: translateY(-1px); box-shadow: 0 12px 26px rgb(123 44 191 / 50%); filter: none; }
+.finder-body .btn.go:active { transform: translateY(1px); box-shadow: 0 4px 12px rgb(123 44 191 / 40%); }
+@media (max-width: 520px) {
+  .finder-body { flex-direction: column; align-items: stretch; border-radius: 20px; padding: 8px 8px 8px 16px; }
+  .finder-body input { padding: 10px 0; }
+  .finder-note { padding: 6px 0; }
+}
