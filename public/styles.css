@@ -108,8 +108,9 @@ p { margin: 0 0 12px; }
 /* Top bar: menu button left, wordmark centred, actions right */
 .topbar { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--surface) 94%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
 .topbar-inner { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; height: 68px; gap: 16px; }
-.brand { justify-self: center; white-space: nowrap; font-family: var(--display); font-weight: 500; font-size: 1.85rem; letter-spacing: .01em; color: var(--text); line-height: 1; }
-.brand span { color: var(--p500); }
+.brand { justify-self: center; white-space: nowrap; font-family: var(--display); font-weight: 700; font-size: 2.05rem; letter-spacing: -.005em; color: var(--text); line-height: 1; }
+.brand em { font-style: italic; font-weight: 500; color: color-mix(in srgb, var(--text) 60%, transparent); }
+.brand span { color: var(--p500); font-size: 1.12em; }
 .brand:hover { text-decoration: none; }
 .brand-mark { font-family: 'JetBrains Mono', monospace; background: var(--p500); color: #fff; border-radius: 8px; padding: 2px 7px; font-size: 0.85rem; }
 .brand-mark.small { font-size: 0.7rem; padding: 1px 5px; border-radius: 6px; }
@@ -129,7 +130,7 @@ p { margin: 0 0 12px; }
 @media (max-width: 640px) {
   .split-btn .lbl { display: none; }
   .top-actions .split-btn .lbl { display: none; }
-  .brand { font-size: 1.1rem; }
+  .brand { font-size: 1.2rem; }
   .top-link { font-size: .85rem; }
   .top-actions { gap: 8px; }
   .topbar-inner { gap: 8px; }
@@ -271,8 +272,6 @@ textarea { resize: vertical; min-height: 110px; }
 
 /* Standalone "Hire tech and AI experts" page (public/hire-tech-and-ai-experts.html) */
 main.seo { padding: 0; }
-.seo-topnav { justify-self: start; display: flex; gap: 18px; }
-.seo-topnav a { color: var(--text); font-weight: 500; font-size: .92rem; }
 .seo-hero { position: relative; color: #fff; padding-block: 72px 80px;
   background: linear-gradient(90deg, rgb(16 0 43 / 92%) 0%, rgb(16 0 43 / 70%) 55%, rgb(16 0 43 / 35%) 100%), url('/images/hero.jpg') center 30% / cover no-repeat, var(--p900); }
 .crumbs { font-size: .85rem; color: #cbb4ea; margin-bottom: 18px; }
@@ -320,7 +319,6 @@ main.seo { padding: 0; }
   .seo-split { grid-template-columns: 1fr; }
 }
 @media (max-width: 640px) {
-  .seo-topnav a:not(:first-child) { display: none; }
   .seo-regions { grid-template-columns: 1fr; }
 }
 
@@ -428,7 +426,8 @@ main.seo { padding: 0; }
 .footer { background: var(--p900); color: #d9c6f2; padding: 56px 0 28px; font-size: .92rem; }
 [data-theme="dark"] .footer { background: #0a0020; border-top: 1px solid var(--border); }
 .footer-top { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 2fr); gap: 40px; padding-bottom: 36px; border-bottom: 1px solid rgb(224 170 255 / 18%); }
-.footer .brand { color: #fff; font-size: 2rem; display: inline-block; }
+.footer .brand { color: #fff; font-size: 2.2rem; display: inline-block; }
+.footer .brand em { color: #cbb4ea; }
 .footer .brand span { color: var(--p300); }
 .footer-brand p { margin: 10px 0 18px; color: #c3a8e6; }
 .footer-cta { background: var(--p200); border-color: var(--p200); color: var(--p900); }
