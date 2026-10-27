@@ -105,9 +105,9 @@ function renderNav() {
   const links = [['#/developers', 'Developers'], ['#/#services', 'Services'], ['#/#pricing', 'Pricing']];
   const authed = u
     ? `<a href="#/dashboard">Dashboard</a>
-       ${u.role === 'client' ? '<a class="btn primary" href="#/new">Get a developer</a>' : ''}
+       ${u.role === 'client' ? '<a class="btn ai" href="#/new">✦ AI Assistant</a>' : ''}
        <a href="#/logout" title="Signed in as ${esc(u.email)}">Sign out</a>`
-    : `<a href="#/login">Sign in</a><a class="btn primary" href="#/signup">Get started</a>`;
+    : `<a href="#/login">Sign in</a><a class="btn ai" href="#/new">✦ AI Assistant</a><a class="btn primary" href="#/signup">Get started</a>`;
   nav.innerHTML = links.map(([h, t]) => `<a href="${h}">${t}</a>`).join('') + authed;
   const current = location.hash.split('?')[0] || '#/';
   nav.querySelectorAll('a').forEach((a) => a.classList.toggle('active', a.getAttribute('href') === current));
@@ -129,29 +129,62 @@ const EXAMPLES = [
 
 async function viewHome() {
   const [stats, { developers }] = await Promise.all([api('/stats'), api('/developers?available=true')]);
+  const featured = [...developers].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))[0];
   app.innerHTML = `
     <section class="hero">
-      <div>
-        <span class="eyebrow"><span class="dot"></span> ${stats.available} developers available now</span>
-        <h1>Your on-demand <span class="grad">tech team</span> — code, AI & site care.</h1>
-        <p class="lead">Describe what you need in plain words. Our AI scopes it, matches you with a vetted developer, and you track everything in one place — from quick fixes to full builds.</p>
-        <div class="stats">
-          <div class="stat"><b>${stats.developers}</b><span>vetted developers</span></div>
-          <div class="stat"><b>${stats.avgRating ?? '4.8'}★</b><span>average rating</span></div>
-          <div class="stat"><b>&lt; 1 hr</b><span>emergency response</span></div>
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <span class="eyebrow"><span class="dot"></span> ${stats.available} developers available now</span>
+          <h1><span class="soft">Code &amp; AI,</span> backed by <span class="hl">experts</span></h1>
+          <p class="lead">On-demand developers for coding, AI, cloud and site maintenance. Describe the job in plain words, our AI scopes it, and you're matched in minutes.</p>
+          <form class="searchbar" id="hero-form" role="search">
+            <input id="hero-desc" placeholder="What do you need? e.g. fix my slow WordPress site" required minlength="15" aria-label="Describe what you need" />
+            <button class="btn primary caps">Find a developer</button>
+          </form>
+          <div class="chips">${EXAMPLES.map((e) => `<button type="button" class="chip">${esc(e)}</button>`).join('')}</div>
+          <div class="hero-tiles">
+            <a class="tile video" href="#/#how" aria-label="See how it works">
+              <span><span style="color:#c792ea">const</span> brief = <span style="color:#c792ea">await</span> <span style="color:var(--sky)">ai</span>.scope(job);<br><span style="color:#c792ea">const</span> dev = match(brief);<br>dev.<span style="color:var(--sky)">ship</span>(<span style="color:#9ce39c">'✓'</span>);</span>
+              <span class="play" aria-hidden="true">▶</span>
+              <span class="cap">See how it works</span>
+            </a>
+            <div class="tile stat">
+              <div class="avatars">${developers.slice(0, 3).map((d) => avatar(d)).join('')}<a class="arrow" href="#/developers" aria-label="Browse developers">↗</a></div>
+              <b>Over ${Math.floor(developers.reduce((n, d) => n + d.jobsCompleted, 0) / 10) * 10}</b>
+              <span>jobs delivered, rated ${stats.avgRating ?? '4.8'}★ on average</span>
+            </div>
+          </div>
+        </div>
+        <div class="visual panel" aria-hidden="true">
+          <span class="confetti c1" style="top:14%;left:18%"></span>
+          <span class="confetti c2" style="top:8%;left:62%"></span>
+          <span class="confetti c3" style="top:30%;right:4%"></span>
+          <span class="confetti c4" style="top:52%;left:6%"></span>
+          <span class="confetti c2" style="bottom:30%;right:10%"></span>
+          <span class="float orange" style="top:34%;left:4%">Emergency fixes in &lt; 1 hr</span>
+          <span class="float purple" style="top:14%;right:6%">AI-scoped in seconds</span>
+          ${featured ? `
+          <div class="feature-card">
+            ${avatar(featured)}
+            <h3 style="margin:0">${esc(featured.name)}</h3>
+            <div class="muted" style="font-size:.88rem">${esc(featured.headline)}</div>
+            <div style="margin-top:8px;font-size:.9rem">${featured.rating ? `${stars(featured.rating)} ${featured.rating} · ` : ''}$${featured.hourlyRate}/hr</div>
+            <div class="code-win"><div class="dots"><i></i><i></i><i></i></div><span class="k">const</span> fix = <span class="k">await</span> <span class="f">expert</span>.<span class="f">ship</span>(<span class="s">'your-task'</span>);</div>
+          </div>` : ''}
         </div>
       </div>
-      <form class="card hero-box" id="hero-form">
-        <label for="hero-desc">What do you need help with?</label>
-        <textarea id="hero-desc" placeholder="e.g. Our checkout page is broken on mobile and we're losing sales…" required minlength="15"></textarea>
-        <div class="chips">${EXAMPLES.map((e) => `<button type="button" class="chip">${esc(e)}</button>`).join('')}</div>
-        <button class="btn primary lg" style="width:100%;margin-top:8px">✦ Scope it with AI & find a developer</button>
-        <p class="hint" style="margin:10px 0 0;text-align:center">Free to post · pay only for approved work</p>
-      </form>
+    </section>
+
+    <section class="strip bleed" aria-label="Technologies">
+      <div class="strip-inner">
+        <span class="strip-label">Experts in</span>
+        ${[['React', '⚛', '#149eca'], ['Python', 'Py', '#3572a5'], ['Claude AI', '✦', '#d97757'], ['AWS', '☁', '#ff9900'], ['WordPress', 'W', '#21759b'], ['Docker', '▣', '#2496ed']]
+          .map(([name, glyph, color]) => `<span class="logo"><i style="background:${color}">${glyph}</i>${name}</span>`).join('')}
+      </div>
     </section>
 
     <section class="section" id="services">
-      <div class="section-head"><div><h2>What our developers handle</h2><p class="muted">One platform for every tech job — big or small.</p></div></div>
+      <div class="section-head"><div><h2>What our developers handle</h2><p class="muted">One platform for every tech job, big or small.</p></div></div>
       <div class="grid">
         ${state.catalog.categories.map((c) => `
           <div class="card">
@@ -163,12 +196,29 @@ async function viewHome() {
       </div>
     </section>
 
-    <section class="section">
-      <h2>How it works</h2>
-      <div class="grid steps" style="margin-top:20px">
-        <div class="card step"><h3>Describe the job</h3><p class="muted">Write it like you'd explain it to a friend. Our AI turns it into a clear brief with skills, urgency and an effort estimate.</p></div>
-        <div class="card step"><h3>Get matched</h3><p class="muted">We rank developers by skills, availability and ratings. Pick one yourself, or let the first qualified expert claim it.</p></div>
-        <div class="card step"><h3>Track & approve</h3><p class="muted">Chat in the job room, follow progress and approve the work when you're happy. Then leave a review.</p></div>
+    <section class="section how" id="how">
+      <div class="visual light panel" aria-hidden="true">
+        <span class="confetti c1" style="top:10%;left:30%"></span>
+        <span class="confetti c3" style="top:20%;right:14%"></span>
+        <span class="confetti c4" style="top:44%;left:4%"></span>
+        <span class="float sky" style="top:26%;left:2%">Matched: 100%</span>
+        <div class="scope-card">
+          <div class="q">“Our checkout page breaks on mobile and we're losing sales.”</div>
+          <div class="ai-box" style="margin:0"><strong>✦ AI brief</strong>
+            <div class="tags" style="margin-top:8px"><span class="tag">Web & App</span><span class="tag">React</span><span class="tag">CSS</span></div>
+            <p class="hint" style="margin:8px 0 0">Emergency · about 4 hours · response within 1 hour</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h2>How It Works</h2>
+        <p class="muted">From "something's broken" to "it's fixed" without hiring, interviews or agencies.</p>
+        <ol class="how-steps">
+          <li><div><h3>Describe the job</h3><p>Write it the way you'd explain it to a friend. Our AI turns it into a clear brief with skills, urgency and an estimate.</p></div></li>
+          <li><div><h3>Get matched</h3><p>We rank developers by skills, availability and ratings. Pick one yourself, or let the first qualified expert claim it.</p></div></li>
+          <li><div><h3>Track &amp; approve</h3><p>Chat in the job room, follow progress, approve the work when you're happy, then leave a review.</p></div></li>
+        </ol>
+        <a class="btn primary caps" style="margin-top:24px" href="${state.user ? '#/new' : '#/signup?role=client'}">Post your first job</a>
       </div>
     </section>
 
@@ -611,6 +661,7 @@ async function route() {
   const params = new URLSearchParams(query);
   const parts = path.split('/').filter(Boolean);
   nav.classList.remove('open');
+  app.classList.toggle('home', !parts.length);
   renderNav();
 
   try {
