@@ -213,6 +213,26 @@ const ROLE_PHOTOS = [
   ['/images/dev-ai.jpg', 'AI engineers', 'LLMs · Automation · Data', 'ai'],
   ['/images/dev-consultant.jpg', 'Tech consultants', 'Architecture · Strategy · Product', 'consulting'],
 ];
+// The wide second row of role photos.
+const ROLE_PHOTOS_WIDE = [
+  ['/images/dev-security.jpg', 'Cybersecurity experts', 'Security audits · Hardening · Recovery', 'maintenance'],
+  ['/images/dev-devops.jpg', 'Cloud & DevOps engineers', 'AWS · Docker · CI/CD', 'devops'],
+];
+
+
+function rolePhoto([src, role, skills, category], developers, width, height) {
+  const count = developers.filter((d) => d.categories.includes(category)).length;
+  return `
+    <a class="role-photo" href="#/developers?category=${category}">
+      <img src="${src}" alt="" loading="lazy" width="${width}" height="${height}" />
+      <div class="role-caption">
+        ${count ? `<span class="badge available">${count} available now</span>` : ''}
+        <h3>${role}</h3>
+        <p>${skills}</p>
+      </div>
+      <span class="role-go">${icon('arrow-up-right', { size: 16 })}</span>
+    </a>`;
+}
 
 // Cycles the "On demand" item: each one pops in, holds, then slides out for the next.
 let rotatorTimer = null;
@@ -318,21 +338,8 @@ async function viewHome() {
 
     <section class="section">
       <div class="section-head"><div><h2>Meet the people who'll build it</h2><p class="muted">Vetted experts, ready to join your team today.</p></div><a class="btn" href="#/developers">Meet everyone ${icon('arrow-right', { size: 16 })}</a></div>
-      <div class="role-photos">
-        ${ROLE_PHOTOS.map(([src, role, skills, category]) => {
-          const count = developers.filter((d) => d.categories.includes(category)).length;
-          return `
-          <a class="role-photo" href="#/developers?category=${category}">
-            <img src="${src}" alt="" loading="lazy" width="720" height="900" />
-            <div class="role-caption">
-              ${count ? `<span class="badge available">${count} available now</span>` : ''}
-              <h3>${role}</h3>
-              <p>${skills}</p>
-            </div>
-            <span class="role-go">${icon('arrow-up-right', { size: 16 })}</span>
-          </a>`;
-        }).join('')}
-      </div>
+      <div class="role-photos">${ROLE_PHOTOS.map((r) => rolePhoto(r, developers, 720, 900)).join('')}</div>
+      <div class="role-photos wide">${ROLE_PHOTOS_WIDE.map((r) => rolePhoto(r, developers, 1200, 750)).join('')}</div>
       <div class="grid" style="margin-top:24px">${developers.slice(0, 3).map(devCard).join('')}</div>
     </section>
 
