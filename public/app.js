@@ -63,7 +63,8 @@ const STATUS_LABEL = { open: 'Open', assigned: 'Assigned', in_progress: 'In prog
 
 const categoryLabel = (id) => state.catalog?.categories.find((c) => c.id === id)?.label ?? id;
 const initials = (name) => name.split(/\s+/).map((p) => p[0]).slice(0, 2).join('').toUpperCase();
-const avatarColor = (id) => `hsl(${(id * 67) % 360} 55% 48%)`;
+const AVATAR_COLORS = ['#3c096c', '#5a189a', '#7b2cbf', '#9d4edd', '#240046'];
+const avatarColor = (id) => AVATAR_COLORS[id % AVATAR_COLORS.length];
 const avatar = (d, cls = '') => `<div class="avatar ${cls}" style="background:${avatarColor(d.id)}" aria-hidden="true">${esc(initials(d.name))}</div>`;
 const stars = (r) => `<span class="stars" aria-label="${r} out of 5">${'★'.repeat(Math.round(r))}${'☆'.repeat(5 - Math.round(r))}</span>`;
 const badge = (value, label = value) => `<span class="badge ${esc(value)}">${esc(label)}</span>`;
@@ -144,7 +145,7 @@ async function viewHome() {
           <div class="chips">${EXAMPLES.map((e) => `<button type="button" class="chip">${esc(e)}</button>`).join('')}</div>
           <div class="hero-tiles">
             <a class="tile video" href="#/#how" aria-label="See how it works">
-              <span><span style="color:#c792ea">const</span> brief = <span style="color:#c792ea">await</span> <span style="color:var(--sky)">ai</span>.scope(job);<br><span style="color:#c792ea">const</span> dev = match(brief);<br>dev.<span style="color:var(--sky)">ship</span>(<span style="color:#9ce39c">'✓'</span>);</span>
+              <span><span class="k">const</span> brief = <span class="k">await</span> <span class="f">ai</span>.scope(job);<br><span class="k">const</span> dev = match(brief);<br>dev.<span class="f">ship</span>(<span class="s">'✓'</span>);</span>
               <span class="play" aria-hidden="true">▶</span>
               <span class="cap">See how it works</span>
             </a>
@@ -178,7 +179,7 @@ async function viewHome() {
     <section class="strip bleed" aria-label="Technologies">
       <div class="strip-inner">
         <span class="strip-label">Experts in</span>
-        ${[['React', '⚛', '#149eca'], ['Python', 'Py', '#3572a5'], ['Claude AI', '✦', '#d97757'], ['AWS', '☁', '#ff9900'], ['WordPress', 'W', '#21759b'], ['Docker', '▣', '#2496ed']]
+        ${[['React', '⚛', '#3c096c'], ['Python', 'Py', '#5a189a'], ['Claude AI', '✦', '#7b2cbf'], ['AWS', '☁', '#9d4edd'], ['WordPress', 'W', '#5a189a'], ['Docker', '▣', '#3c096c']]
           .map(([name, glyph, color]) => `<span class="logo"><i style="background:${color}">${glyph}</i>${name}</span>`).join('')}
       </div>
     </section>
