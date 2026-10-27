@@ -284,7 +284,7 @@ const MAX_TEAM = 5; // the most developers a job can have
 const usd = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 
 // What every client gets, whatever they buy.
-const PROMISES = ['No long-term contracts', '2-week risk-free trial', 'No fee to hire your developer directly', 'Pay only for approved work'];
+const PROMISES = ['Every expert vetted and interviewed', 'No long-term contracts', '2-week risk-free trial', 'No fee to hire directly', 'Pay only for approved work'];
 
 // [name, price, unit, summary, prefill for the job form, featured]
 const PACKAGES = [
@@ -417,15 +417,16 @@ async function viewHome() {
         </picture>
       </div>
       <div class="hero-copy">
-        <p class="eyebrow">${stats.developers} experts ready to join your team</p>
+        <p class="eyebrow">${stats.developers} vetted, interviewed experts ready to join your team</p>
         <h1><strong>Your tech team,</strong> <span>on your timeline</span></h1>
+        <p class="hero-sub">Hire a single expert or a complete team.</p>
         <div class="finder">
           <div class="finder-tabs" role="tablist">
             <button type="button" role="tab" aria-selected="true" class="on" data-finder="hire">${icon('briefcase', { size: 18 })}Hire a team</button>
             <button type="button" role="tab" aria-selected="false" data-finder="join">${icon('code', { size: 18 })}Join as developer</button>
           </div>
           <form class="finder-body" id="finder-hire">
-            <input id="finder-text" placeholder="What do you need built?" aria-label="What do you need built?" required />
+            <input id="finder-text" placeholder="What do you need built? One expert or a whole team" aria-label="What do you need built?" required />
             <button class="btn primary">Find my team</button>
           </form>
           <div class="finder-body" id="finder-join" hidden>
@@ -445,7 +446,7 @@ async function viewHome() {
     </section>
 
     <section class="section" id="team">
-      <div class="section-head"><h2>Meet the people who'll build it</h2><a class="btn" href="#/developers">Meet everyone</a></div>
+      <div class="section-head"><div><h2>Meet the people who'll build it</h2><p class="muted">Every expert is vetted and passes rigorous interviews before joining.</p></div><a class="btn" href="#/developers">Meet everyone</a></div>
       <div class="role-photos">${ROLE_PHOTOS.map((r) => rolePhoto(r, 720, 900)).join('')}</div>
       <div class="role-photos wide">${ROLE_PHOTOS_WIDE.map((r) => rolePhoto(r, 1200, 750)).join('')}</div>
     </section>
@@ -560,11 +561,11 @@ async function viewDeveloper(id) {
 const AUTH_PERKS = {
   developer: {
     title: 'Grow your freelance work with Tech and AI Xperts',
-    perks: ['Join client teams that fit your skills', 'Set your own hourly rate and availability', 'AI-scoped briefs, so you know exactly what to build', 'Build a reputation with ratings and reviews'],
+    perks: ['Pass our vetting and interviews once, then get matched with clients', 'Join client teams that fit your skills', 'Set your own hourly rate and availability', 'AI-scoped briefs, so you know exactly what to build', 'Build a reputation with ratings and reviews'],
   },
   client: {
     title: 'Your tech team, on your timeline',
-    perks: ['Get a team of developers for your product', 'You set the deadline', 'Chat with your team and track progress', 'Pay only for work you approve'],
+    perks: ['Every expert is vetted and interviewed', 'Get a team of developers for your product', 'You set the deadline', 'Chat with your team and track progress', 'Pay only for work you approve'],
   },
 };
 

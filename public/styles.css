@@ -615,3 +615,5 @@ input:focus, textarea:focus, select:focus { border-color: var(--p400); outline: 
 .stepper { border-radius: 12px; overflow: hidden; border-width: 2px; }
 .builder-summary { border-radius: 16px; }
 @media (max-width: 420px) { .finder-tabs button { font-size: .86rem; padding: 10px 8px; gap: 6px; white-space: nowrap; } .finder-tabs button .icon { display: none; } }
+
+.hero-sub { margin: 14px 0 0; font-size: 1.15rem; color: #e3d0f7; }
