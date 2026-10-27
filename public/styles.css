@@ -154,6 +154,25 @@ textarea { resize: vertical; min-height: 110px; }
 .check input { width: auto; margin: 0; accent-color: var(--primary); }
 .check:has(input:checked) { border-color: var(--primary); background: var(--primary-soft); }
 
+/* Combined sign in / create account page */
+.auth-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 24px; align-items: stretch; max-width: 1040px; margin-inline: auto; }
+.auth-aside { padding: 32px; display: flex; flex-direction: column; }
+.auth-aside h2 { margin-top: 8px; }
+.auth-aside .segmented { align-self: flex-start; }
+.perks { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 14px; }
+.perks li { display: grid; grid-template-columns: 24px 1fr; gap: 10px; color: var(--muted); }
+.perks li::before { content: '✓'; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--p500); color: #fff; font-size: .75rem; font-weight: 700; }
+.auth-card { padding: 32px; }
+.auth-tabs { display: flex; width: 100%; }
+.auth-tabs button { flex: 1; }
+.linklike { background: none; border: 0; padding: 0; font: inherit; color: var(--primary); cursor: pointer; font-weight: 600; }
+.linklike:hover { text-decoration: underline; }
+@media (max-width: 860px) {
+  .auth-split { grid-template-columns: 1fr; }
+  .auth-aside { order: 2; padding: 24px; }
+  .auth-card { padding: 24px; }
+}
+
 /* Cards & layout */
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); }
 .card + .card { margin-top: 16px; }

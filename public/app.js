@@ -108,7 +108,7 @@ function renderNav() {
     ? `<a href="#/dashboard">Dashboard</a>
        ${u.role === 'client' ? '<a class="btn ai" href="#/new">✦ AI Assistant</a>' : ''}
        <a href="#/logout" title="Signed in as ${esc(u.email)}">Sign out</a>`
-    : `<a href="#/login">Sign in</a><a class="btn ai" href="#/new">✦ AI Assistant</a><a class="btn primary" href="#/signup">Get started</a>`;
+    : `<a href="#/signup?role=developer">For developers</a><a href="#/login">Sign in</a><a class="btn ai" href="#/new">✦ AI Assistant</a><a class="btn primary" href="#/signup">Get started</a>`;
   nav.innerHTML = links.map(([h, t]) => `<a href="${h}">${t}</a>`).join('') + authed;
   const current = location.hash.split('?')[0] || '#/';
   nav.querySelectorAll('a').forEach((a) => a.classList.toggle('active', a.getAttribute('href') === current));
@@ -308,43 +308,78 @@ async function viewDeveloper(id) {
     </div>`;
 }
 
+const AUTH_PERKS = {
+  developer: {
+    title: 'Grow your freelance work with TechXperts',
+    perks: ['Get matched to jobs that fit your skills', 'Set your own hourly rate and availability', 'AI-scoped briefs, so you know exactly what to build', 'Build a reputation with ratings and reviews'],
+  },
+  client: {
+    title: 'An expert developer, whenever you need one',
+    perks: ['Describe the job in plain words, our AI scopes it', 'Get ranked matches by skills, availability and rating', 'Chat with your developer and track progress', 'Pay only for work you approve'],
+  },
+};
+
 function viewAuth(mode, params) {
   if (state.user) return go('#/dashboard');
   let role = params.get('role') === 'developer' ? 'developer' : 'client';
+  const draft = { email: '', name: '' };
+
   const render = () => {
     const signup = mode === 'signup';
+    const perks = AUTH_PERKS[role];
     app.innerHTML = `
-      <div class="narrow">
-        <div class="card">
-          <h1 style="font-size:1.8rem">${signup ? 'Create your account' : 'Welcome back'}</h1>
-          <p class="muted">${signup ? 'Join TechXperts in under a minute.' : 'Sign in to your dashboard.'}</p>
-          ${signup ? `<div class="segmented" role="tablist">
-              <button type="button" data-role="client" class="${role === 'client' ? 'on' : ''}">I need a developer</button>
-              <button type="button" data-role="developer" class="${role === 'developer' ? 'on' : ''}">I'm a developer</button>
-            </div>` : ''}
+      <div class="auth-split">
+        <aside class="auth-aside panel">
+          <div class="segmented" role="tablist" aria-label="Account type">
+            <button type="button" role="tab" data-role="client" aria-selected="${role === 'client'}" class="${role === 'client' ? 'on' : ''}">I need a developer</button>
+            <button type="button" role="tab" data-role="developer" aria-selected="${role === 'developer'}" class="${role === 'developer' ? 'on' : ''}">I'm a developer</button>
+          </div>
+          <h2>${perks.title}</h2>
+          <ul class="perks">${perks.perks.map((p) => `<li>${p}</li>`).join('')}</ul>
+        </aside>
+        <div class="card auth-card">
+          <div class="segmented auth-tabs" role="tablist" aria-label="Sign in or create account">
+            <button type="button" role="tab" data-mode="login" aria-selected="${!signup}" class="${!signup ? 'on' : ''}">Sign in</button>
+            <button type="button" role="tab" data-mode="signup" aria-selected="${signup}" class="${signup ? 'on' : ''}">Create account</button>
+          </div>
+          <h1 style="font-size:1.9rem;margin-bottom:4px">${signup ? (role === 'developer' ? 'Join as a developer' : 'Create your account') : 'Welcome back'}</h1>
+          <p class="muted">${signup ? 'Takes under a minute.' : `Sign in to your ${role === 'developer' ? 'developer ' : ''}dashboard.`}</p>
           <div id="auth-error"></div>
           <form id="auth-form">
-            ${signup ? `<div class="field"><label for="name">Full name</label><input id="name" name="name" required autocomplete="name" /></div>` : ''}
+            ${signup ? `<div class="field"><label for="name">Full name</label><input id="name" name="name" required autocomplete="name" value="${esc(draft.name)}" /></div>` : ''}
             ${signup && role === 'client' ? `<div class="field"><label for="company">Company <span class="hint">(optional)</span></label><input id="company" name="company" autocomplete="organization" /></div>` : ''}
-            <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" required autocomplete="email" /></div>
+            <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" required autocomplete="email" value="${esc(draft.email)}" /></div>
             <div class="field"><label for="password">Password ${signup ? '<span class="hint">(8+ characters)</span>' : ''}</label><input id="password" name="password" type="password" required minlength="${signup ? 8 : 1}" autocomplete="${signup ? 'new-password' : 'current-password'}" /></div>
             ${signup && role === 'developer' ? `
               <div class="field"><label for="headline">Headline</label><input id="headline" name="headline" placeholder="e.g. Full-stack engineer · React & Node.js" /></div>
               <div class="field"><label>Services you offer</label><div class="checks">
                 ${state.catalog.categories.map((c) => `<label class="check"><input type="checkbox" name="categories" value="${c.id}" />${esc(c.label)}</label>`).join('')}
               </div></div>
-              <div class="field"><label for="skills">Skills <span class="hint">(comma separated)</span></label><input id="skills" name="skills" placeholder="React, Python, AWS" /></div>
-              <div class="field"><label for="hourlyRate">Hourly rate (USD)</label><input id="hourlyRate" name="hourlyRate" type="number" min="5" max="1000" value="50" /></div>` : ''}
-            <button class="btn primary" style="width:100%">${signup ? 'Create account' : 'Sign in'}</button>
+              <div class="row">
+                <div class="field"><label for="skills">Skills <span class="hint">(comma separated)</span></label><input id="skills" name="skills" placeholder="React, Python, AWS" /></div>
+                <div class="field"><label for="hourlyRate">Hourly rate (USD)</label><input id="hourlyRate" name="hourlyRate" type="number" min="5" max="1000" value="50" /></div>
+              </div>` : ''}
+            <button type="submit" class="btn primary caps" style="width:100%">${signup ? (role === 'developer' ? 'Create developer account' : 'Create account') : 'Sign in'}</button>
           </form>
           <p class="muted" style="margin-top:16px;text-align:center">
-            ${signup ? 'Already have an account? <a href="#/login">Sign in</a>' : 'New here? <a href="#/signup">Create an account</a>'}
+            ${signup ? 'Already have an account? <button type="button" class="linklike" data-mode="login">Sign in</button>' : 'New here? <button type="button" class="linklike" data-mode="signup">Create an account</button>'}
           </p>
           ${!signup ? `<p class="hint" style="text-align:center">Demo: <span class="mono">client@techxperts.dev</span> or <span class="mono">amara@techxperts.dev</span> · password <span class="mono">demo1234</span></p>` : ''}
         </div>
       </div>`;
 
-    app.querySelectorAll('[data-role]').forEach((b) => b.addEventListener('click', () => { role = b.dataset.role; render(); }));
+    // Switching tabs keeps what was typed and updates the URL without a full route change.
+    const rerender = () => {
+      const form = document.getElementById('auth-form');
+      draft.email = form.email.value;
+      if (form.name) draft.name = form.name.value;
+      history.replaceState(null, '', `#/${mode}${role === 'developer' ? '?role=developer' : ''}`);
+      renderNav();
+      render();
+    };
+    app.querySelectorAll('[data-role]').forEach((b) => b.addEventListener('click', () => { role = b.dataset.role; rerender(); }));
+    app.querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => { mode = b.dataset.mode; rerender(); }));
+
     document.getElementById('auth-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const f = new FormData(e.target);
@@ -354,12 +389,12 @@ function viewAuth(mode, params) {
         body.categories = f.getAll('categories');
         if (body.skills !== undefined) body.skills = body.skills.split(',').map((s) => s.trim()).filter(Boolean);
       }
-      const btn = e.target.querySelector('button');
+      const btn = e.target.querySelector('button[type=submit]');
       btn.disabled = true;
       try {
         setSession(await api(signup ? '/auth/register' : '/auth/login', { body }));
         toast(signup ? 'Welcome to TechXperts!' : `Welcome back, ${state.user.name.split(' ')[0]}`);
-        go(state.user.role === 'client' && sessionStorage.getItem('tx_draft') ? '#/new' : '#/dashboard');
+        go(state.user.role === 'client' && sessionStorage.getItem('tx_draft') ? '#/new' : state.user.role === 'developer' && signup ? '#/dashboard?tab=profile' : '#/dashboard');
       } catch (err) {
         document.getElementById('auth-error').innerHTML = errorBox(err.message);
         btn.disabled = false;
