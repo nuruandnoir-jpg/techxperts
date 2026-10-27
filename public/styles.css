@@ -958,3 +958,19 @@ input:focus, textarea:focus, select:focus { border-color: var(--p400); outline: 
 .seo-hero-fs::before { content: ''; position: absolute; inset: 0; z-index: -1;
   background: linear-gradient(90deg, rgb(16 0 43 / 80%) 0%, rgb(16 0 43 / 45%) 55%, rgb(60 9 108 / 25%) 100%); }
 @media (max-width: 640px) { .seo-hero.seo-hero-fs { background: var(--p900); } .seo-hero-fs::before { background: rgb(16 0 43 / 62%); } }
+
+/* Signature brand pattern: code brackets, braces, sparkles and the X, tiled very faintly.
+   pattern-on-dark.svg is for purple/dark surfaces, pattern-on-light.svg for light ones. */
+:root { --pattern-dark: url('/images/pattern-on-dark.svg'); --pattern-light: url('/images/pattern-on-light.svg'); }
+.footer { background: var(--pattern-dark) 0 0 / 200px, var(--p900); }
+[data-theme="dark"] .footer { background: var(--pattern-dark) 0 0 / 200px, #0a0020; }
+.cta { background: var(--pattern-dark) 0 0 / 200px, radial-gradient(600px 320px at 85% 120%, rgb(157 78 221 / 55%), transparent 70%), radial-gradient(500px 260px at 0% -20%, rgb(90 24 154 / 50%), transparent 70%), var(--p900); }
+.seo-band { background: var(--pattern-dark) 0 0 / 200px, var(--p900); }
+.xp-party { background: var(--pattern-dark) 0 0 / 200px, linear-gradient(135deg, var(--p900), var(--p700)); }
+.pricing-band::before { background-image: var(--pattern-dark); background-size: 200px; }
+/* Light surfaces: the pattern fades out from the middle so text stays clean */
+.how-line { position: relative; isolation: isolate; }
+.how-line::before, .xp-sleepy::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: var(--pattern-light) 0 0 / 200px;
+  -webkit-mask-image: radial-gradient(ellipse at center, transparent 20%, #000 75%); mask-image: radial-gradient(ellipse at center, transparent 20%, #000 75%); }
+.xp-sleepy { position: relative; isolation: isolate; overflow: hidden; }
+[data-theme="dark"] .how-line::before, [data-theme="dark"] .xp-sleepy::before { background-image: var(--pattern-dark); }

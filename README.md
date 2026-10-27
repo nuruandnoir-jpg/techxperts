@@ -23,6 +23,7 @@ Your tech team, on your timeline. Clients describe what they're building, set a 
 - **How it works timeline:** Idea → Team → Launch, filling in as you scroll.
 - **Role icons** in the team builder, its seats and the role photos.
 - **Vetted & interviewed badge** on developer cards and profiles. It only shows for developers marked as vetted: new sign-ups start unvetted, and developers can't set it themselves. To mark one after their interviews, run this in the D1 console (Cloudflare dashboard → D1 → techxperts → Console): `UPDATE developer_profiles SET vetted = 1 WHERE user_id = (SELECT id FROM users WHERE email = 'dev@example.com');`. With `DEMO_DATA = "true"`, the demo developers are marked vetted.
+- **Signature pattern:** a faint tile of code brackets, braces, sparkles and the X (`public/images/pattern-on-dark.svg` for purple surfaces, `pattern-on-light.svg` for light ones). It's used on the footer, the dark bands and call-to-action cards, the pricing section, How it works, the not-found screen and the share image.
 - A developer directory you can search and filter.
 - Role-based access: clients only see their own jobs. Developers see recruiting jobs and jobs they're on. Only the client and the team can message in a job room.
 - Light and dark themes, and a responsive layout down to phone width.
