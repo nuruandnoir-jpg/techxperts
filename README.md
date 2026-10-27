@@ -17,6 +17,8 @@ Your tech team, on your timeline. Clients describe what they're building, set a 
 
 **Platform**
 - A minimal landing page: a photo hero with a hire/join finder, a rotating "On demand" line, role photos, "How it works" in one line, pricing packages, a team builder that prices a custom team, and a developer call to action. Prices (senior hourly rates by role, mid/expert multipliers, packages and the promises row) are set in `ROLE_RATES`, `LEVELS`, `PACKAGES` and `PROMISES` in `public/app.js`.
+- **Xpert, the live mascot** (`public/xpert.js`): sits on the hero finder and follows the pointer, waves when poked, smiles at a good idea, thinks while the AI scopes a job, celebrates (with confetti) when a job goes live, and dozes on the not-found and offline screens. Motion is skipped when the visitor prefers reduced motion.
+- **Team forming:** in the team builder, each person you add drops into one of five seats; on a job page, new team members pop into place and open seats gently pulse.
 - A developer directory you can search and filter.
 - Role-based access: clients only see their own jobs. Developers see recruiting jobs and jobs they're on. Only the client and the team can message in a job room.
 - Light and dark themes, and a responsive layout down to phone width.

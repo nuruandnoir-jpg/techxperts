@@ -1,5 +1,6 @@
 // Tech and AI Xperts single-page app: hash routing, a tiny API client and view renderers.
 import { icon } from './icons.js';
+import { xpert, setMood, lookAt, confetti } from './xpert.js';
 
 const app = document.getElementById('app');
 const nav = document.getElementById('nav');
@@ -93,7 +94,9 @@ const dueLabel = (iso) => {
 };
 const teamLabel = (r) => `${r.team.length} of ${r.teamSize} developer${r.teamSize > 1 ? 's' : ''}`;
 const onTeam = (r, user) => r.team.some((d) => d.id === user.id);
-const loading = () => { app.innerHTML = '<div class="empty"><div class="spinner" style="margin:auto"></div></div>'; };
+const loading = () => { app.innerHTML = `<div class="empty xp-loading" role="status">${xpert('think', { size: 84 })}<p>Xpert is thinking…</p></div>`; };
+// Xpert dozing off: used for "not found" and "can't reach the server".
+const sleepy = (title, body) => `<div class="narrow card empty xp-sleepy">${xpert('sleepy', { size: 120 })}<h2>${title}</h2>${body}</div>`;
 const errorBox = (msg) => `<div class="error" role="alert">${esc(msg)}</div>`;
 
 function devCard(d) {
@@ -278,6 +281,8 @@ const ROLE_RATES = [
   ['Full-stack developer', 45], ['Mobile developer', 48], ['AI engineer', 60], ['Cybersecurity expert', 60],
   ['Cloud & DevOps engineer', 55], ['UI/UX designer', 40], ['QA tester', 30], ['Tech consultant', 60],
 ];
+// Short label and colour for each role's seat in the team builder (same order as ROLE_RATES).
+const ROLE_SEATS = [['FS', '#7b2cbf'], ['MOB', '#5a189a'], ['AI', '#9d4edd'], ['SEC', '#3c096c'], ['OPS', '#240046'], ['UX', '#c77dff'], ['QA', '#7b2cbf'], ['TC', '#5a189a']];
 // [label, multiplier on the senior rate]
 const LEVELS = [['Mid-level', 0.78], ['Senior', 1], ['Expert / lead', 1.4]];
 const MAX_TEAM = 5; // the most developers a job can have
@@ -300,14 +305,21 @@ const PACKAGES = [
     { description: 'A product team: a senior lead, a full-time developer and a part-time QA tester.', teamSize: 3, estimateHours: 400, budget: 15200 }, true],
 ];
 
+const PACKAGE_ICONS = ['wrench', 'cloud', 'sparkles', 'code', 'briefcase']; // same order as PACKAGES
+
 function pricingSection() {
   return `
-    <section class="section" id="pricing">
-      <h2>Packages</h2>
+    <section class="section pricing-band bleed" id="pricing">
+      <div class="pricing-head">
+        <p class="pricing-kicker">Pricing</p>
+        <h2>Packages</h2>
+        <p>Clear prices. No surprises.</p>
+      </div>
       <div class="packages">
         ${PACKAGES.map(([name, price, unit, summary, , featured], i) => `
           <div class="card plan ${featured ? 'featured' : ''}">
             ${featured ? '<span class="plan-tag">Most popular</span>' : ''}
+            <span class="plan-icon">${icon(PACKAGE_ICONS[i], { size: 20 })}</span>
             <h3>${name}</h3>
             <div class="price">${price.startsWith('From ') ? `<span class="from">From</span>${price.slice(5)}` : price}<small>${unit}</small></div>
             <p>${summary}</p>
@@ -338,6 +350,10 @@ function pricingSection() {
           <select id="b-hours">${[10, 20, 30, 40].map((h) => `<option value="${h}" ${h === 20 ? 'selected' : ''}>${h === 40 ? '40 hours (full-time)' : `${h} hours`}</option>`).join('')}</select>
           <label for="b-weeks">For how long</label>
           <select id="b-weeks">${[1, 2, 4, 8, 12, 26, 52].map((w) => `<option value="${w}" ${w === 4 ? 'selected' : ''}>${w === 52 ? '1 year' : `${w} week${w > 1 ? 's' : ''}`}</option>`).join('')}</select>
+          <div class="seats" aria-hidden="true">
+            <span class="seats-label">Your team</span>
+            <div class="seats-row" id="b-seats"></div>
+          </div>
           <div class="builder-total">
             <span id="b-team">Add people to your team</span>
             <b id="b-price">${usd(0)}</b>
@@ -365,6 +381,18 @@ function bindPricing() {
   app.querySelectorAll('[data-package]').forEach((b) => b.addEventListener('click', () => startJob(PACKAGES[b.dataset.package][4])));
 
   const counts = ROLE_RATES.map(() => 0);
+  // Seats fill in the order people are added; a new person drops into the next empty seat.
+  let seats = [];
+  let seatId = 0;
+  const seatsEl = document.getElementById('b-seats');
+  const drawSeats = (newId) => {
+    seatsEl.innerHTML = Array.from({ length: MAX_TEAM }, (_, i) => {
+      const seat = seats[i];
+      if (!seat) return '<span class="seat"></span>';
+      const [label, color] = ROLE_SEATS[seat.role];
+      return `<span class="seat filled ${seat.id === newId ? 'drop' : ''}" style="--c:${color}" title="${ROLE_RATES[seat.role][0]}">${label}</span>`;
+    }).join('');
+  };
   const hours = document.getElementById('b-hours');
   const weeks = document.getElementById('b-weeks');
   const level = document.getElementById('b-level');
@@ -386,8 +414,15 @@ function bindPricing() {
   };
   app.querySelectorAll('[data-step]').forEach((b) => b.addEventListener('click', () => {
     const i = Number(b.dataset.role);
-    counts[i] = Math.max(0, counts[i] + Number(b.dataset.step));
+    const step = Number(b.dataset.step);
+    counts[i] = Math.max(0, counts[i] + step);
+    if (step > 0) seats.push({ id: ++seatId, role: i });
+    else {
+      const at = seats.map((x) => x.role).lastIndexOf(i);
+      if (at >= 0) seats.splice(at, 1);
+    }
     update();
+    drawSeats(step > 0 ? seatId : null);
   }));
   hours.addEventListener('change', update);
   weeks.addEventListener('change', update);
@@ -403,6 +438,7 @@ function bindPricing() {
     });
   });
   update();
+  drawSeats();
 }
 
 async function viewHome() {
@@ -421,6 +457,10 @@ async function viewHome() {
         <h1><strong>Your tech team,</strong> <span>on your timeline</span></h1>
         <p class="hero-sub">Hire a single expert or a complete team.</p>
         <div class="finder">
+          <div class="finder-xpert">
+            <span class="xp-bubble" id="hero-bubble">Hi, I'm Xpert!</span>
+            <button type="button" class="xp-poke" id="hero-xpert" aria-label="Say hi to Xpert">${xpert('wave', { size: 88, follow: true })}</button>
+          </div>
           <div class="finder-tabs" role="tablist" data-active="hire">
             <button type="button" role="tab" aria-selected="true" class="on" data-finder="hire">${icon('briefcase', { size: 18 })}Hire a team</button>
             <button type="button" role="tab" aria-selected="false" data-finder="join">${icon('code', { size: 18 })}Join as developer</button>
@@ -493,6 +533,33 @@ async function viewHome() {
 
   bindPricing();
   startRotator(document.getElementById('ondemand-item'));
+  bindHeroXpert();
+}
+
+// Xpert in the hero: waves hello, then watches the pointer. It looks at the field while
+// someone types, smiles at a long enough idea, and waves again when poked.
+function bindHeroXpert() {
+  const poke = document.getElementById('hero-xpert');
+  const svg = poke.querySelector('.xpert');
+  const bubble = document.getElementById('hero-bubble');
+  const input = document.getElementById('finder-text');
+  const say = (text, ms = 2600) => {
+    bubble.textContent = text;
+    bubble.classList.add('show');
+    clearTimeout(say.t);
+    say.t = setTimeout(() => bubble.classList.remove('show'), ms);
+  };
+  setTimeout(() => { setMood(svg, 'look'); }, 1800);
+  setTimeout(() => say("Hi, I'm Xpert!"), 500);
+  poke.addEventListener('click', () => {
+    setMood(svg, 'wave', 1600);
+    say(['Need a team? I can help.', 'Tell me what to build!', 'Every expert is interviewed.'][Math.floor(Math.random() * 3)]);
+  });
+  input.addEventListener('input', () => {
+    lookAt(svg, input);
+    if (input.value.trim().length >= 15 && svg.dataset.mood !== 'party') { setMood(svg, 'party', 1400); say('Ooh, I like it!', 1800); }
+  });
+  input.addEventListener('focus', () => lookAt(svg, input));
 }
 
 async function viewDevelopers(params) {
@@ -760,7 +827,10 @@ function viewNewRequest() {
 
   app.innerHTML = `
     <div class="narrow" style="max-width:760px">
-      <div class="page-head"><h1>Build your team</h1></div>
+      <div class="page-head xp-greet">
+        ${xpert('wave', { size: 84, follow: true })}
+        <div><h1>Build your team</h1><p class="xp-say" id="xp-say" aria-live="polite">Hi! Tell me what you're building and I'll scope it for you.</p></div>
+      </div>
       <form class="card" id="req-form">
         <div id="req-error"></div>
         <div class="field">
@@ -791,6 +861,9 @@ function viewNewRequest() {
 
   const form = document.getElementById('req-form');
   const scopeBtn = document.getElementById('scope-btn');
+  const helper = app.querySelector('.xp-greet .xpert');
+  const say = (text) => { document.getElementById('xp-say').textContent = text; };
+  setTimeout(() => { if (helper.dataset.mood === 'wave') setMood(helper, 'look'); }, 2200);
   form.querySelectorAll('.chip').forEach((chip) => chip.addEventListener('click', () => { form.description.value = chip.dataset.text; form.description.focus(); }));
 
   async function runScope() {
@@ -798,6 +871,8 @@ function viewNewRequest() {
     if (description.length < 15) { toast('Add a bit more detail first (15+ characters)'); return; }
     scopeBtn.disabled = true;
     scopeBtn.innerHTML = '<span class="spinner"></span> Scoping…';
+    setMood(helper, 'think');
+    say('Hmm, let me think about the best team for this…');
     try {
       const { scope } = await api('/requests/scope', { body: { description } });
       form.title.value = scope.title;
@@ -811,7 +886,9 @@ function viewNewRequest() {
         <div class="ai-box"><strong>${icon('sparkles', { size: 16 })} AI brief</strong> <span class="hint">(${scope.source === 'claude' ? 'by Claude' : 'quick estimate'})</span>
           <p style="margin:6px 0 0">${esc(scope.summary)}</p>
           <p class="hint" style="margin:6px 0 0">We filled in the details below — adjust anything before posting.</p></div>`;
-    } catch (err) { toast(err.message); }
+      setMood(helper, 'party', 2200);
+      say('Done! I filled in the details below. Change anything you like.');
+    } catch (err) { setMood(helper, 'look'); say("Sorry, I couldn't scope that. Try again in a moment."); toast(err.message); }
     scopeBtn.disabled = false;
     scopeBtn.innerHTML = `${icon('sparkles', { size: 18 })} Re-scope with AI`;
   }
@@ -833,10 +910,13 @@ function viewNewRequest() {
     try {
       const { request } = await api('/requests', { body });
       toast('Job posted!');
+      sessionStorage.setItem('tx_celebrate', String(request.id));
       go(`#/requests/${request.id}`);
     } catch (err) { document.getElementById('req-error').innerHTML = errorBox(err.message); }
   });
 }
+
+const seenTeams = new Map(); // job id -> team member ids already shown
 
 async function viewRequest(id) {
   if (!state.user) return go('#/login');
@@ -846,6 +926,12 @@ async function viewRequest(id) {
   const isDev = onTeam(r, u);
   const spotsLeft = r.teamSize - r.team.length;
   const step = STATUS_FLOW.indexOf(r.status);
+  const celebrate = sessionStorage.getItem('tx_celebrate') === String(r.id);
+  sessionStorage.removeItem('tx_celebrate');
+  // Members who weren't on the team the last time this job was shown drop into their seat.
+  const seen = seenTeams.get(r.id);
+  seenTeams.set(r.id, new Set(r.team.map((d) => d.id)));
+  const joined = (d) => !seen || !seen.has(d.id);
 
   const actions = [];
   if (u.role === 'developer' && r.status === 'open' && !isDev) actions.push(['accept', r.teamSize > 1 ? 'Join this team' : 'Accept this job', 'primary']);
@@ -858,6 +944,11 @@ async function viewRequest(id) {
   const participant = isClient || isDev || u.role === 'admin';
   app.innerHTML = `
     <p><a class="back-link" href="#/dashboard">${icon('arrow-left', { size: 16 })} Dashboard</a></p>
+    ${celebrate ? `
+      <div class="card xp-party" role="status">
+        ${xpert('party', { size: 92 })}
+        <div><h2>Your job is live!</h2><p class="muted">${r.teamSize > 1 ? `Now let's fill your ${r.teamSize} seats. Add matched developers below, or let them join from the job board.` : "Now let's find your developer. Add a match below, or let one join from the job board."}</p></div>
+      </div>` : ''}
     <div class="split">
       <div>
         <div class="card">
@@ -917,13 +1008,14 @@ async function viewRequest(id) {
           <dt>Team</dt><dd>${teamLabel(r)}</dd>
         </dl>
         <ul class="team-list">
-          ${r.team.map((d) => `<li>${avatar(d)}<div><a class="dev-name" href="#/developers/${d.id}">${esc(d.name)}</a>${d.id === r.developer?.id && r.team.length > 1 ? ' <span class="tag">Lead</span>' : ''}<div class="hint">${esc(d.headline ?? '')}</div></div></li>`).join('')}
+          ${r.team.map((d, i) => `<li class="${joined(d) ? 'joined' : ''}" style="--i:${i}">${avatar(d)}<div><a class="dev-name" href="#/developers/${d.id}">${esc(d.name)}</a>${d.id === r.developer?.id && r.team.length > 1 ? ' <span class="tag">Lead</span>' : ''}<div class="hint">${esc(d.headline ?? '')}</div></div></li>`).join('')}
           ${Array.from({ length: Math.max(0, spotsLeft) }, () => `<li class="open-spot"><div class="avatar" aria-hidden="true">${icon('plus', { size: 18 })}</div><div class="hint">Open spot</div></li>`).join('')}
         </ul>
         ${r.skills.length ? `<div class="tags" style="margin-top:16px">${r.skills.map((s) => `<span class="tag">${esc(s)}</span>`).join('')}</div>` : ''}
       </aside>
     </div>`;
 
+  if (celebrate) confetti();
   const timeline = document.getElementById('timeline');
   if (timeline) timeline.scrollTop = timeline.scrollHeight;
 
@@ -983,7 +1075,7 @@ async function route() {
     else if (parts[0] === 'dashboard') await viewDashboard(params);
     else if (parts[0] === 'new') viewNewRequest();
     else if (parts[0] === 'requests' && parts[1]) await viewRequest(parts[1]);
-    else app.innerHTML = '<div class="card empty"><h2>Page not found</h2><a href="#/">Go home</a></div>';
+    else app.innerHTML = sleepy('Page not found', '<p>Xpert looked everywhere, then dozed off.</p><a class="btn primary" href="#/">Go home</a>');
   } catch (err) {
     if (err === STALE) return;
     app.innerHTML = `<div class="narrow">${errorBox(err.message)}<a href="#/">Go home</a></div>`;
@@ -1005,13 +1097,10 @@ async function init() {
     state.catalog = catalog;
   } catch (err) {
     console.error(err);
-    app.innerHTML = `
-      <div class="narrow card empty">
-        <h2>We can't reach Tech and AI Xperts right now</h2>
+    app.innerHTML = sleepy("We can't reach Tech and AI Xperts right now", `
         <p>Please check your connection and try again in a moment.</p>
         <button type="button" class="btn primary caps" id="retry">Try again</button>
-        <p class="hint" style="margin-top:16px">Details: ${esc(err.message)}</p>
-      </div>`;
+        <p class="hint" style="margin-top:16px">Details: ${esc(err.message)}</p>`);
     document.getElementById('retry').addEventListener('click', init);
     return;
   }
