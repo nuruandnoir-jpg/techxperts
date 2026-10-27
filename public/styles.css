@@ -861,3 +861,39 @@ input:focus, textarea:focus, select:focus { border-color: var(--p400); outline: 
 .utility-mail:hover span { text-decoration: underline; text-underline-offset: 3px; }
 [data-theme="dark"] .utility-bar { background: #08001a; border-bottom: 1px solid rgb(224 170 255 / 10%); }
 @media (max-width: 640px) { .utility-note { display: none; } .utility-inner { justify-content: center; } }
+
+/* SEO day three: /hire-full-stack-developers */
+.seo-hero-fs { background: linear-gradient(90deg, rgb(16 0 43 / 94%) 0%, rgb(16 0 43 / 78%) 52%, rgb(16 0 43 / 35%) 100%), url('/images/dev-fullstack.jpg') 80% 30% / cover no-repeat, var(--p900); }
+@media (max-width: 640px) { .seo-hero-fs { background: linear-gradient(rgb(16 0 43 / 82%), rgb(16 0 43 / 90%)), url('/images/dev-fullstack.jpg') 60% 30% / cover no-repeat, var(--p900); } }
+/* The stack, drawn as layers that step down like a staircase */
+.seo-stack { list-style: none; padding: 0; margin: 32px 0 0; display: grid; gap: 12px; counter-reset: layer; }
+.seo-stack > li { display: flex; gap: 18px; align-items: flex-start; padding: 20px 22px; border-radius: 18px; background: rgb(255 255 255 / 6%); border: 1px solid rgb(224 170 255 / 18%); transition: transform .25s, background .25s; }
+.seo-stack > li:nth-child(2) { margin-left: 4%; } .seo-stack > li:nth-child(3) { margin-left: 8%; } .seo-stack > li:nth-child(4) { margin-left: 12%; }
+.seo-stack > li:hover { transform: translateX(6px); background: rgb(255 255 255 / 10%); }
+.layer-num { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, var(--p400), var(--p600)); color: #fff; font-weight: 800; font-size: .9rem; }
+.seo-stack h3 { margin: 0 0 2px; color: #fff; font-size: 1.15rem; }
+.seo-stack p { margin: 0; color: #cbb4ea; }
+.seo-stack .seo-chips { margin-top: 12px; }
+.seo-stack .seo-chips li { background: rgb(255 255 255 / 8%); border-color: rgb(224 170 255 / 22%); color: #f3e8ff; font-size: .85rem; padding: 5px 12px; }
+@media (max-width: 640px) { .seo-stack > li { margin-left: 0 !important; flex-direction: column; } }
+/* Full-stack or specialists */
+.seo-compare-wrap { margin-top: 24px; overflow-x: auto; border: 2px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+.seo-compare { width: 100%; border-collapse: collapse; min-width: 520px; }
+.seo-compare th, .seo-compare td { text-align: left; padding: 16px 22px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.seo-compare tbody tr:last-child > * { border-bottom: 0; }
+.seo-compare thead th { font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); background: var(--surface-2); }
+.seo-compare tbody th { font-weight: 500; width: 46%; }
+.seo-compare b { color: var(--p600); }
+[data-theme="dark"] .seo-compare b { color: var(--p300); }
+
+/* Hero finder tabs, compact chips: two small pills with an icon bubble instead of a full-width switch */
+.finder-tabs { display: inline-flex; width: auto; background: none; padding: 2px; gap: 8px; border-radius: 0; }
+.finder-tabs::before { display: none; }
+.finder-tabs button { flex: none; gap: 8px; padding: 4px 14px 4px 4px; border-radius: 999px; font-size: .85rem; font-weight: 600; white-space: nowrap;
+  background: rgb(255 255 255 / 8%); border: 1px solid rgb(255 255 255 / 22%); color: rgb(255 255 255 / 86%); box-shadow: none;
+  transition: background .2s, color .2s, border-color .2s, transform .2s; }
+.finder-tabs button .icon { display: inline-block; box-sizing: border-box; width: 26px; height: 26px; padding: 5px; border-radius: 50%; background: rgb(255 255 255 / 14%); transition: background .2s, transform .3s cubic-bezier(.3, 1.4, .5, 1); }
+.finder-tabs button:not(.on):hover { background: rgb(255 255 255 / 16%); color: #fff; transform: translateY(-1px); }
+.finder-tabs button.on { background: #fff; border-color: #fff; color: #3c096c; box-shadow: 0 6px 16px rgb(10 0 30 / 22%); }
+.finder-tabs button.on .icon { background: linear-gradient(135deg, #9d4edd, #7b2cbf); color: #fff; }
+@media (max-width: 420px) { .finder-tabs button { font-size: .82rem; padding: 3px 12px 3px 3px; gap: 6px; } .finder-tabs button .icon { display: inline-block; width: 24px; height: 24px; } }

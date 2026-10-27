@@ -4,7 +4,7 @@ import { app } from './api.js';
 
 // Pages listed in the sitemap. Their HTML uses "https://__SITE__" in canonical URLs,
 // social tags and structured data; it is replaced with the live site address.
-export const PUBLIC_PAGES = ['/', '/hire-tech-and-ai-experts', '/hire-ai-engineers'];
+export const PUBLIC_PAGES = ['/', '/hire-tech-and-ai-experts', '/hire-ai-engineers', '/hire-full-stack-developers'];
 const PLACEHOLDER = 'https://__SITE__';
 
 /** The site's public address: SITE_URL if set (use it once you have a custom domain), else the request origin. */
