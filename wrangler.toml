@@ -8,7 +8,7 @@ compatibility_flags = ["nodejs_compat"]
 [assets]
 directory = "./public"
 binding = "ASSETS"
-run_worker_first = ["/api/*", "/", "/index.html", "/hire-tech-and-ai-experts", "/robots.txt", "/sitemap.xml"]
+run_worker_first = ["/api/*", "/", "/index.html", "/hire-tech-and-ai-experts", "/hire-ai-engineers", "/robots.txt", "/sitemap.xml"]
 
 # The database. No database_id: Cloudflare creates the database on the first deploy.
 [[d1_databases]]

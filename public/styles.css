@@ -665,3 +665,34 @@ input:focus, textarea:focus, select:focus { border-color: var(--p400); outline: 
   .finder-body input { padding: 10px 0; }
   .finder-note { padding: 6px 0; }
 }
+
+/* SEO day two: /hire-ai-engineers */
+.seo-hero-ai { background: linear-gradient(90deg, rgb(16 0 43 / 94%) 0%, rgb(16 0 43 / 78%) 52%, rgb(16 0 43 / 40%) 100%), url('/images/dev-ai.jpg') 85% 30% / cover no-repeat, var(--p900); }
+.seo-stats { list-style: none; display: flex; flex-wrap: wrap; gap: 14px; margin: 36px 0 0; padding: 0; }
+.seo-stats li { padding: 14px 20px; border-radius: 16px; background: rgb(255 255 255 / 10%); border: 1px solid rgb(255 255 255 / 18%); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); min-width: 150px; }
+.seo-stats b { display: block; font-family: var(--display); font-size: 1.9rem; line-height: 1.1; font-variant-numeric: lining-nums; }
+.seo-stats span { font-size: .85rem; color: #e3d0f7; }
+.seo-kicker { margin: 0 0 8px; font-size: .75rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--p500); }
+[data-theme="dark"] .seo-kicker { color: var(--p300); }
+.seo-usecases { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 28px; }
+.seo-usecases article { background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius); padding: 24px; transition: transform .2s, border-color .2s, box-shadow .2s; }
+.seo-usecases article:hover { transform: translateY(-3px); border-color: var(--p300); box-shadow: 0 14px 30px rgb(60 9 108 / 12%); }
+.uc-num { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; margin-bottom: 14px; background: linear-gradient(135deg, var(--p400), var(--p600)); color: #fff; font-weight: 800; font-size: .9rem; }
+.seo-usecases h3 { margin: 0 0 6px; font-size: 1.1rem; }
+.seo-usecases p { margin: 0; color: var(--muted); }
+.seo-chips { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; padding: 0; margin: 18px 0 0; }
+.seo-chips li { padding: 7px 14px; border-radius: 999px; background: var(--surface); border: 2px solid var(--border); font-weight: 600; font-size: .9rem; }
+.seo-photos-single { display: block; }
+.seo-photos-single img { aspect-ratio: 4 / 4.2; }
+.seo-body .how-steps:has(li:nth-child(4)) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.seo-prices { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: 24px; }
+.seo-prices article { position: relative; background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius); padding: 24px; }
+.seo-prices article.featured { background: var(--p900); color: #f6ecff; border-color: var(--p700); }
+.seo-prices h3 { margin: 0 0 8px; font-size: 1.05rem; }
+.seo-prices .price { font-size: 1.9rem; }
+.seo-prices p { margin: 8px 0 0; color: var(--muted); }
+.seo-prices .featured p, .seo-prices .featured .price small { color: #cbb4ea; }
+.seo-fine { margin: 20px 0 0; color: var(--muted); }
+.seo-related { margin: 18px 0 0; text-align: center; color: var(--muted); }
+@media (max-width: 1000px) { .seo-usecases, .seo-prices { grid-template-columns: repeat(2, minmax(0, 1fr)); } .seo-body .how-steps:has(li:nth-child(4)) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .seo-usecases, .seo-prices, .seo-body .how-steps:has(li:nth-child(4)) { grid-template-columns: 1fr; } }
