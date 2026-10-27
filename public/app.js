@@ -145,13 +145,17 @@ function applyTheme(theme) {
     btn.title = btn.getAttribute('aria-label');
   }
 }
+// The device setting decides the theme. The switch overrides it for the current visit only.
 function toggleTheme() {
   const next = currentTheme() === 'dark' ? 'light' : 'dark';
-  safeSet('tx_theme', next);
+  try { sessionStorage.setItem('tx_theme', next); } catch { /* storage unavailable */ }
   applyTheme(next);
 }
-// Follow the device setting until the viewer picks a theme themselves.
-darkQuery.addEventListener('change', (e) => { if (!safeGet('tx_theme')) applyTheme(e.matches ? 'dark' : 'light'); });
+// When the device switches between light and dark, follow it and drop any manual override.
+darkQuery.addEventListener('change', (e) => {
+  try { sessionStorage.removeItem('tx_theme'); } catch { /* storage unavailable */ }
+  applyTheme(e.matches ? 'dark' : 'light');
+});
 
 function renderNav() {
   const u = state.user;
