@@ -237,6 +237,18 @@ textarea { resize: vertical; min-height: 110px; }
 }
 @media (max-width: 480px) { .hero-tiles { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) { .float { animation: none; } }
+/* Lighter left side of the hero in light mode */
+@media (prefers-color-scheme: light) {
+  .hero h1 { color: var(--p700); }
+  .hero h1 .hl { color: var(--p500); }
+  .hero .searchbar .btn.primary { background: var(--p500); border-color: var(--p500); }
+  .hero .tile.video { background: linear-gradient(135deg, var(--p500), var(--p400) 60%, var(--p300)); border-color: transparent; color: #fff; }
+  .hero .tile.video .k, .hero .tile.video .f { color: var(--p200); }
+  .hero .tile.video .s { color: #fff; }
+  .hero .tile.video .play { background: #fff; color: var(--p600); box-shadow: 0 0 0 8px rgb(255 255 255 / 25%); }
+  .hero .tile.stat { background: color-mix(in srgb, var(--p200) 22%, #fff); }
+  .hero .tile.stat .arrow { background: var(--p500); color: #fff; }
+}
 
 /* Tech strip */
 .hero + .strip { margin-top: 0; }
