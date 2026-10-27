@@ -70,11 +70,11 @@ const go = (hash) => { location.hash = hash; };
 
 const SERVICE_ICONS = { web: 'code', ai: 'ai', maintenance: 'wrench', devops: 'cloud', consulting: 'bulb' };
 const SERVICE_COPY = {
-  web: 'Websites, web apps and mobile apps.',
-  ai: 'Chatbots, AI tools and automation.',
-  maintenance: 'Fixes, updates, security and speed.',
-  devops: 'Hosting, deployment and cloud setup.',
-  consulting: 'Advice on tools, tech and planning.',
+  web: 'Websites and apps your customers will love to use.',
+  ai: 'Chatbots and automations that work while you sleep.',
+  maintenance: 'Fast fixes, updates and security. Your site, always on.',
+  devops: 'Launch, scale and stay online without the stress.',
+  consulting: 'Smart advice before you spend a single cent.',
 };
 const STATUS_FLOW = ['open', 'assigned', 'in_progress', 'review', 'completed'];
 const STATUS_LABEL = { open: 'Open', assigned: 'Assigned', in_progress: 'In progress', review: 'In review', completed: 'Completed', cancelled: 'Cancelled' };
@@ -199,6 +199,43 @@ const EXAMPLES = [
 ];
 
 
+// What clients can get on demand, shown one at a time under the hero: [label, icon].
+const OFFERINGS = [
+  ['Full-stack developers', 'code'], ['Cybersecurity experts', 'shield'], ['AI & ML engineers', 'ai'],
+  ['Cloud & DevOps engineers', 'cloud'], ['Mobile app developers', 'mobile'], ['UI/UX designers', 'design'],
+  ['Data engineers', 'data'], ['QA & testing', 'bug'], ['Backend & API developers', 'server'],
+  ['Site maintenance', 'wrench'], ['Automation experts', 'terminal'], ['Tech consultants', 'bulb'],
+];
+
+// Role photos for "Developers ready to join your team": [photo, role, skills, category].
+const ROLE_PHOTOS = [
+  ['/images/dev-fullstack.jpg', 'Full-stack developers', 'React · Node.js · Mobile apps', 'web'],
+  ['/images/dev-ai.jpg', 'AI engineers', 'LLMs · Automation · Data', 'ai'],
+  ['/images/dev-consultant.jpg', 'Tech consultants', 'Architecture · Strategy · Product', 'consulting'],
+];
+
+// Cycles the "On demand" item: each one pops in, holds, then slides out for the next.
+let rotatorTimer = null;
+function startRotator(el) {
+  let i = 0;
+  const show = () => {
+    const [label, ico] = OFFERINGS[i % OFFERINGS.length];
+    el.className = `ondemand-item tone-${i % 4}`;
+    el.innerHTML = `<span class="ondemand-icon">${icon(ico, { size: 22 })}</span>${esc(label)}`;
+    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('in')));
+    rotatorTimer = setTimeout(() => {
+      el.classList.add('out');
+      i += 1;
+      rotatorTimer = setTimeout(show, 380);
+    }, 2300);
+  };
+  show();
+}
+function stopRotator() {
+  clearTimeout(rotatorTimer);
+  rotatorTimer = null;
+}
+
 async function viewHome() {
   const [stats, { developers }] = await Promise.all([load('/stats'), load('/developers?available=true')]);
   app.innerHTML = `
@@ -211,30 +248,38 @@ async function viewHome() {
       </div>
       <div class="hero-copy">
         <h1><span class="soft">Your tech team,</span> <span>on your</span> <span>timeline</span></h1>
-        <p class="lead">Get a team of developers to build your product. You set the deadline.</p>
+        <p class="lead">Developers, AI engineers and security experts, assembled around your idea and your deadline. No hiring. No agencies. Just work that ships.</p>
         <div class="hero-actions">
           <a class="btn primary caps" href="${state.user?.role === 'developer' ? '#/dashboard' : '#/new'}">Build my team</a>
-          <a class="btn outline caps" href="#/developers">Find developers</a>
+          <a class="btn outline caps" href="#/developers">Meet the experts</a>
         </div>
-        <p class="dev-link">Are you a developer? <a href="#/signup?role=developer">Join here ${icon('arrow-right', { size: 16 })}</a></p>
+        <p class="dev-link">Are you a developer? <a href="#/signup?role=developer">Join the network ${icon('arrow-right', { size: 16 })}</a></p>
         <div class="hero-tiles">
           <a class="tile ai-tile" href="${state.user?.role === 'developer' ? '#/dashboard' : '#/new'}">
             <span class="ai-tile-icon">${icon('sparkles', { size: 20 })}</span>
             <b>AI Assistant</b>
-            <span>Describe your idea. Get a plan and a team in minutes.</span>
+            <span>Tell it your idea. Get a plan, a timeline and a team in minutes.</span>
             <span class="ai-tile-go">${icon('arrow-up-right', { size: 16 })}</span>
           </a>
           <div class="tile stat">
             <div class="avatars">${developers.slice(0, 2).map((d) => avatar(d)).join('')}<a class="arrow" href="#/developers" aria-label="Browse developers">${icon('arrow-up-right', { size: 16 })}</a></div>
             <b>Over ${Math.floor(developers.reduce((n, d) => n + d.jobsCompleted, 0) / 10) * 10}</b>
-            <span>jobs delivered by our teams</span>
+            <span>projects shipped by our teams</span>
           </div>
         </div>
       </div>
     </section>
 
+    <section class="ondemand bleed" aria-label="What you can get on demand">
+      <div class="ondemand-inner">
+        <span class="ondemand-label">On demand</span>
+        <span class="ondemand-stage" aria-hidden="true"><span class="ondemand-item" id="ondemand-item"></span></span>
+        <span class="sr-only">${OFFERINGS.map(([label]) => label).join(', ')}.</span>
+      </div>
+    </section>
+
     <section class="section" id="services">
-      <div class="section-head"><div><h2>What your team can do</h2><p class="muted">From a quick fix to a full product.</p></div></div>
+      <div class="section-head"><div><h2>Whatever you're building, we have the team</h2><p class="muted">From a five-minute fix to a full product launch.</p></div></div>
       <div class="grid">
         ${state.catalog.categories.map((c) => `
           <div class="card">
@@ -261,24 +306,39 @@ async function viewHome() {
         </div>
       </div>
       <div>
-        <h2>How it works</h2>
+        <h2>From idea to launch in three steps</h2>
         <ol class="how-steps">
-          <li><div><h3>Tell us what you're building</h3><p>Share your idea and your deadline. AI turns it into a clear plan.</p></div></li>
-          <li><div><h3>Get your team</h3><p>We match the right developers. Pick them, or let them join.</p></div></li>
-          <li><div><h3>Ship on time</h3><p>Chat with your team, track progress and approve the work.</p></div></li>
+          <li><div><h3>Share your idea</h3><p>Tell us what you're building and when you need it. AI turns it into a clear plan.</p></div></li>
+          <li><div><h3>Meet your team</h3><p>Hand-picked experts join your project. Choose them yourself, or let them come to you.</p></div></li>
+          <li><div><h3>Launch on time</h3><p>Chat with your team, watch progress live and approve every milestone.</p></div></li>
         </ol>
-        <a class="btn primary caps" style="margin-top:24px" href="${state.user ? '#/new' : '#/signup?role=client'}">Build my team</a>
+        <a class="btn primary caps" style="margin-top:24px" href="${state.user ? '#/new' : '#/signup?role=client'}">Start my project</a>
       </div>
     </section>
 
     <section class="section">
-      <div class="section-head"><div><h2>Developers ready to join your team</h2></div><a class="btn" href="#/developers">See all ${icon('arrow-right', { size: 16 })}</a></div>
-      <div class="grid">${developers.slice(0, 3).map(devCard).join('')}</div>
+      <div class="section-head"><div><h2>Meet the people who'll build it</h2><p class="muted">Vetted experts, ready to join your team today.</p></div><a class="btn" href="#/developers">Meet everyone ${icon('arrow-right', { size: 16 })}</a></div>
+      <div class="role-photos">
+        ${ROLE_PHOTOS.map(([src, role, skills, category]) => {
+          const count = developers.filter((d) => d.categories.includes(category)).length;
+          return `
+          <a class="role-photo" href="#/developers?category=${category}">
+            <img src="${src}" alt="" loading="lazy" width="720" height="900" />
+            <div class="role-caption">
+              ${count ? `<span class="badge available">${count} available now</span>` : ''}
+              <h3>${role}</h3>
+              <p>${skills}</p>
+            </div>
+            <span class="role-go">${icon('arrow-up-right', { size: 16 })}</span>
+          </a>`;
+        }).join('')}
+      </div>
+      <div class="grid" style="margin-top:24px">${developers.slice(0, 3).map(devCard).join('')}</div>
     </section>
 
     <section class="section" id="pricing">
-      <h2>Pricing</h2>
-      <p class="muted">Developers set their own rates.</p>
+      <h2>Simple pricing, no surprises</h2>
+      <p class="muted">No hidden fees. You only pay for work you approve.</p>
       <div class="grid" style="margin-top:20px">
         <div class="card plan"><h3>Quick fix</h3><div class="price">Pay as you go</div><ul><li>One developer</li><li>From $50 an hour</li><li>Pay only for approved work</li></ul></div>
         <div class="card plan"><h3>Site Care</h3><div class="price">$199<small>/month</small></div><ul><li>Updates and backups</li><li>Security checks</li><li>4 hours of fixes</li><li>Fast response</li></ul></div>
@@ -287,10 +347,12 @@ async function viewHome() {
     </section>
 
     <section class="section card cta">
-      <h2>Are you a developer?</h2>
-      <p>Join client teams. Set your own rate.</p>
+      <h2>Love building things? Join us.</h2>
+      <p>Work on real products, set your own rate and get matched with teams that need your skills.</p>
       <a class="btn lg" href="#/signup?role=developer">Join as a developer</a>
     </section>`;
+
+  startRotator(document.getElementById('ondemand-item'));
 }
 
 async function viewDevelopers(params) {
@@ -751,6 +813,7 @@ async function viewRequest(id) {
 
 async function route() {
   const seq = ++routeSeq;
+  stopRotator();
   const raw = location.hash.slice(1) || '/';
   const [pathPart, query = ''] = raw.split('?');
   const [path, anchor] = pathPart.split('#');
