@@ -952,3 +952,9 @@ input:focus, textarea:focus, select:focus { border-color: var(--p400); outline: 
 .builder-name .role-ico { width: 30px; height: 30px; border-radius: 10px; }
 .builder-name { gap: 10px; }
 .builder-name { flex: 1; }
+
+/* /hire-full-stack-developers hero: looping code video behind a purple overlay */
+.seo-hero.seo-hero-fs { overflow: hidden; isolation: isolate; background: var(--p900); }
+.seo-hero-fs::before { content: ''; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(90deg, rgb(16 0 43 / 90%) 0%, rgb(16 0 43 / 66%) 55%, rgb(60 9 108 / 38%) 100%); }
+@media (max-width: 640px) { .seo-hero.seo-hero-fs { background: var(--p900); } .seo-hero-fs::before { background: rgb(16 0 43 / 74%); } }

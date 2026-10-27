@@ -69,7 +69,7 @@
       "about": {
         "@id": "https://__SITE__/#organization"
       },
-      "primaryImageOfPage": "https://__SITE__/images/dev-fullstack.jpg"
+      "primaryImageOfPage": "https://__SITE__/media/fs-poster.jpg"
     },
     {
       "@type": "Service",
@@ -266,6 +266,13 @@
 
   <main class="seo">
     <section class="seo-hero seo-hero-fs">
+      <video class="seo-hero-video" autoplay muted loop playsinline preload="auto" poster="/media/fs-poster.jpg" aria-hidden="true">
+        <source src="/media/fs-loop.mp4" type="video/mp4" />
+      </video>
+      <script>
+        // Show the still frame instead of motion for people who prefer reduced motion.
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) document.currentScript.previousElementSibling.removeAttribute('autoplay');
+      </script>
       <div class="container">
         <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a> <span aria-hidden="true">/</span> <a href="/hire-tech-and-ai-experts">Hire tech and AI experts</a> <span aria-hidden="true">/</span> <span aria-current="page">Full-stack developers</span></nav>
         <h1><strong>Hire full-stack developers</strong> <span>who own it, front to back</span></h1>
