@@ -75,7 +75,8 @@ export function developerRoutes({ db, requireAuth, requireRole }) {
       .prepare(
         `SELECT rv.rating, rv.comment, rv.created_at, r.title, u.name AS client_name
          FROM reviews rv JOIN requests r ON r.id = rv.request_id JOIN users u ON u.id = r.client_id
-         WHERE r.developer_id = ? ORDER BY rv.created_at DESC LIMIT 20`,
+         JOIN request_team t ON t.request_id = r.id
+         WHERE t.developer_id = ? ORDER BY rv.created_at DESC LIMIT 20`,
       )
       .all(row.id)
       .map((r) => ({ rating: r.rating, comment: r.comment, title: r.title, clientName: r.client_name, createdAt: r.created_at }));

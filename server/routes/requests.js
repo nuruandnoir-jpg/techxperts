@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { CATEGORIES, URGENCY } from '../catalog.js';
 import { scopeRequest } from '../ai.js';
 import { transaction } from '../db.js';
-import { HttpError, oneOf, optionalInt, requestView, requireString, stringList } from '../helpers.js';
+import { HttpError, oneOf, optionalFutureDate, optionalInt, requestView, requireString, stringList } from '../helpers.js';
 import { findMatches } from './developers.js';
 
 const REQUEST_SELECT = `
@@ -13,10 +13,10 @@ const REQUEST_SELECT = `
 `;
 
 // Allowed status changes: "from>to" -> who may perform it, and the timeline text.
+// "team" means any developer on the job's team.
 const TRANSITIONS = {
-  'assigned>in_progress': { by: 'developer', event: 'started work' },
-  'in_progress>review': { by: 'developer', event: 'submitted the work for review' },
-  'assigned>open': { by: 'developer', event: 'released the job back to the marketplace' },
+  'assigned>in_progress': { by: 'team', event: 'started work' },
+  'in_progress>review': { by: 'team', event: 'submitted the work for review' },
   'review>completed': { by: 'client', event: 'approved the work and closed the job' },
   'review>in_progress': { by: 'client', event: 'requested changes' },
   'open>cancelled': { by: 'client', event: 'cancelled the request' },
@@ -27,6 +27,17 @@ export function requestRoutes({ db, requireAuth, requireRole }) {
   const router = Router();
   router.use(requireAuth);
 
+  const teamOf = (requestId) =>
+    db
+      .prepare(
+        `SELECT u.id, u.name, p.headline FROM request_team t
+         JOIN users u ON u.id = t.developer_id LEFT JOIN developer_profiles p ON p.user_id = u.id
+         WHERE t.request_id = ? ORDER BY t.joined_at, u.id`,
+      )
+      .all(requestId);
+
+  const view = (row) => ({ ...requestView(row), team: teamOf(row.id) });
+
   const load = (id) => {
     const row = db.prepare(`${REQUEST_SELECT} WHERE r.id = ?`).get(Number(id));
     if (!row) throw new HttpError(404, 'Request not found');
@@ -34,14 +45,31 @@ export function requestRoutes({ db, requireAuth, requireRole }) {
   };
 
   const isOwner = (row, user) => row.client_id === user.id;
-  const isAssignee = (row, user) => row.developer_id === user.id;
+  const isMember = (row, user) =>
+    user.role === 'developer' && !!db.prepare('SELECT 1 FROM request_team WHERE request_id = ? AND developer_id = ?').get(row.id, user.id);
   const canView = (row, user) =>
-    user.role === 'admin' || isOwner(row, user) || isAssignee(row, user) || (user.role === 'developer' && row.status === 'open');
+    user.role === 'admin' || isOwner(row, user) || isMember(row, user) || (user.role === 'developer' && row.status === 'open');
 
   const logEvent = (requestId, userId, text) =>
     db.prepare("INSERT INTO messages (request_id, sender_id, kind, body) VALUES (?, ?, 'event', ?)").run(requestId, userId, text);
 
   const touch = (id) => db.prepare("UPDATE requests SET updated_at = datetime('now') WHERE id = ?").run(id);
+
+  /** Adds a developer to an open job's team. The job moves to "assigned" once the team is full. */
+  function addToTeam(row, dev, actorId, event) {
+    if (row.status !== 'open') throw new HttpError(409, 'This job is no longer recruiting');
+    if (db.prepare('SELECT 1 FROM request_team WHERE request_id = ? AND developer_id = ?').get(row.id, dev.id)) {
+      throw new HttpError(409, `${dev.name} is already on this team`);
+    }
+    transaction(db, () => {
+      db.prepare('INSERT INTO request_team (request_id, developer_id) VALUES (?, ?)').run(row.id, dev.id);
+      const { n } = db.prepare('SELECT COUNT(*) AS n FROM request_team WHERE request_id = ?').get(row.id);
+      const status = n >= row.team_size ? 'assigned' : 'open';
+      db.prepare("UPDATE requests SET developer_id = COALESCE(developer_id, ?), status = ?, updated_at = datetime('now') WHERE id = ?").run(dev.id, status, row.id);
+      logEvent(row.id, actorId, event);
+      if (status === 'assigned' && row.team_size > 1) logEvent(row.id, null, 'The team is complete');
+    });
+  }
 
   router.post('/scope', async (req, res) => {
     const description = requireString(req.body.description, 'description', { min: 15, max: 5000 });
@@ -57,10 +85,14 @@ export function requestRoutes({ db, requireAuth, requireRole }) {
       rows = db.prepare(`${REQUEST_SELECT} WHERE r.client_id = ? ORDER BY r.updated_at DESC`).all(user.id);
     } else {
       rows = db
-        .prepare(`${REQUEST_SELECT} WHERE r.status = 'open' OR r.developer_id = ? ORDER BY r.updated_at DESC`)
+        .prepare(
+          `${REQUEST_SELECT} WHERE r.status = 'open'
+             OR r.id IN (SELECT request_id FROM request_team WHERE developer_id = ?)
+           ORDER BY r.updated_at DESC`,
+        )
         .all(user.id);
     }
-    res.json({ requests: rows.map(requestView) });
+    res.json({ requests: rows.map(view) });
   });
 
   router.post('/', requireRole('client'), (req, res) => {
@@ -71,27 +103,29 @@ export function requestRoutes({ db, requireAuth, requireRole }) {
     const urgency = oneOf(b.urgency, 'urgency', Object.keys(URGENCY), 'standard');
     const skills = stringList(b.skills, 'skills', { maxItems: 10 });
     const budget = optionalInt(b.budget, 'budget', { min: 0, max: 10_000_000 });
-    const estimateHours = optionalInt(b.estimateHours, 'estimateHours', { min: 1, max: 2000 });
+    const estimateHours = optionalInt(b.estimateHours, 'estimateHours', { min: 1, max: 5000 });
+    const teamSize = optionalInt(b.teamSize, 'teamSize', { min: 1, max: 5 }) ?? 1;
+    const deadline = optionalFutureDate(b.deadline, 'deadline');
     const aiSummary = typeof b.aiSummary === 'string' ? b.aiSummary.trim().slice(0, 1000) || null : null;
 
     const id = transaction(db, () => {
       const { lastInsertRowid } = db
         .prepare(
-          `INSERT INTO requests (client_id, title, description, category, urgency, skills, budget, estimate_hours, ai_summary)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          `INSERT INTO requests (client_id, title, description, category, urgency, skills, budget, estimate_hours, team_size, deadline, ai_summary)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         )
-        .run(req.user.id, title, description, category, urgency, JSON.stringify(skills), budget, estimateHours, aiSummary);
+        .run(req.user.id, title, description, category, urgency, JSON.stringify(skills), budget, estimateHours, teamSize, deadline, aiSummary);
       logEvent(lastInsertRowid, req.user.id, 'posted the request');
       return lastInsertRowid;
     });
-    res.status(201).json({ request: requestView(load(id)) });
+    res.status(201).json({ request: view(load(id)) });
   });
 
   router.get('/:id', (req, res) => {
     const row = load(req.params.id);
     if (!canView(row, req.user)) throw new HttpError(404, 'Request not found');
 
-    const participant = req.user.role === 'admin' || isOwner(row, req.user) || isAssignee(row, req.user);
+    const participant = req.user.role === 'admin' || isOwner(row, req.user) || isMember(row, req.user);
     const messages = participant
       ? db
           .prepare(
@@ -110,33 +144,43 @@ export function requestRoutes({ db, requireAuth, requireRole }) {
       : [];
 
     const review = db.prepare('SELECT rating, comment, created_at FROM reviews WHERE request_id = ?').get(row.id) ?? null;
-    const request = requestView(row);
-    const matches = isOwner(row, req.user) && row.status === 'open' ? findMatches(db, request) : [];
+    const request = view(row);
+    const onTeam = new Set(request.team.map((d) => d.id));
+    const matches = isOwner(row, req.user) && row.status === 'open'
+      ? findMatches(db, request, 5 + onTeam.size).filter((d) => !onTeam.has(d.id)).slice(0, 5)
+      : [];
     res.json({ request, messages, review, matches });
   });
 
   router.post('/:id/accept', requireRole('developer'), (req, res) => {
     const row = load(req.params.id);
-    if (row.status !== 'open') throw new HttpError(409, 'This request is no longer open');
-    transaction(db, () => {
-      db.prepare("UPDATE requests SET developer_id = ?, status = 'assigned', updated_at = datetime('now') WHERE id = ?").run(req.user.id, row.id);
-      logEvent(row.id, req.user.id, 'accepted the job');
-    });
-    res.json({ request: requestView(load(row.id)) });
+    addToTeam(row, req.user, req.user.id, row.team_size > 1 ? 'joined the team' : 'accepted the job');
+    res.json({ request: view(load(row.id)) });
   });
 
   router.post('/:id/assign', requireRole('client'), (req, res) => {
     const row = load(req.params.id);
     if (!isOwner(row, req.user)) throw new HttpError(404, 'Request not found');
-    if (row.status !== 'open') throw new HttpError(409, 'Only open requests can be assigned');
     const devId = optionalInt(req.body.developerId, 'developerId', { min: 1 });
     const dev = devId && db.prepare("SELECT u.id, u.name FROM users u JOIN developer_profiles p ON p.user_id = u.id WHERE u.id = ? AND p.availability != 'offline'").get(devId);
     if (!dev) throw new HttpError(400, 'Developer not found or unavailable');
+    addToTeam(row, dev, req.user.id, `added ${dev.name} to the team`);
+    res.json({ request: view(load(row.id)) });
+  });
+
+  // A team member leaves a job that hasn't started yet; it goes back to recruiting.
+  router.post('/:id/leave', requireRole('developer'), (req, res) => {
+    const row = load(req.params.id);
+    if (!isMember(row, req.user)) throw new HttpError(403, "You're not on this team");
+    if (!['open', 'assigned'].includes(row.status)) throw new HttpError(409, "You can't leave once work has started");
     transaction(db, () => {
-      db.prepare("UPDATE requests SET developer_id = ?, status = 'assigned', updated_at = datetime('now') WHERE id = ?").run(dev.id, row.id);
-      logEvent(row.id, req.user.id, `assigned the job to ${dev.name}`);
+      db.prepare('DELETE FROM request_team WHERE request_id = ? AND developer_id = ?').run(row.id, req.user.id);
+      const next = db.prepare('SELECT developer_id FROM request_team WHERE request_id = ? ORDER BY joined_at LIMIT 1').get(row.id);
+      const lead = row.developer_id === req.user.id ? (next?.developer_id ?? null) : row.developer_id;
+      db.prepare("UPDATE requests SET status = 'open', developer_id = ?, updated_at = datetime('now') WHERE id = ?").run(lead, row.id);
+      logEvent(row.id, req.user.id, 'left the team');
     });
-    res.json({ request: requestView(load(row.id)) });
+    res.json({ request: view(load(row.id)) });
   });
 
   router.post('/:id/status', (req, res) => {
@@ -144,24 +188,23 @@ export function requestRoutes({ db, requireAuth, requireRole }) {
     const status = requireString(req.body.status, 'status');
     const rule = TRANSITIONS[`${row.status}>${status}`];
     if (!rule) throw new HttpError(409, `Cannot move a request from ${row.status} to ${status}`);
-    const allowed = rule.by === 'client' ? isOwner(row, req.user) : isAssignee(row, req.user);
-    if (!allowed) throw new HttpError(403, `Only the ${rule.by} on this job can do that`);
+    const allowed = rule.by === 'client' ? isOwner(row, req.user) : isMember(row, req.user);
+    if (!allowed) throw new HttpError(403, `Only the ${rule.by === 'team' ? 'team' : 'client'} on this job can do that`);
 
     transaction(db, () => {
-      const developerId = status === 'open' ? null : row.developer_id;
-      db.prepare("UPDATE requests SET status = ?, developer_id = ?, updated_at = datetime('now') WHERE id = ?").run(status, developerId, row.id);
-      if (status === 'completed' && row.developer_id) {
-        db.prepare('UPDATE developer_profiles SET jobs_completed = jobs_completed + 1 WHERE user_id = ?').run(row.developer_id);
+      db.prepare("UPDATE requests SET status = ?, updated_at = datetime('now') WHERE id = ?").run(status, row.id);
+      if (status === 'completed') {
+        db.prepare('UPDATE developer_profiles SET jobs_completed = jobs_completed + 1 WHERE user_id IN (SELECT developer_id FROM request_team WHERE request_id = ?)').run(row.id);
       }
       logEvent(row.id, req.user.id, rule.event);
     });
-    res.json({ request: requestView(load(row.id)) });
+    res.json({ request: view(load(row.id)) });
   });
 
   router.post('/:id/messages', (req, res) => {
     const row = load(req.params.id);
-    if (!(isOwner(row, req.user) || isAssignee(row, req.user) || req.user.role === 'admin')) {
-      throw new HttpError(403, 'Only the client and assigned developer can message on this job');
+    if (!(isOwner(row, req.user) || isMember(row, req.user) || req.user.role === 'admin')) {
+      throw new HttpError(403, 'Only the client and the team can message on this job');
     }
     const body = requireString(req.body.body, 'body', { max: 4000 });
     const { lastInsertRowid } = db
@@ -173,6 +216,7 @@ export function requestRoutes({ db, requireAuth, requireRole }) {
     });
   });
 
+  // One review per job; the rating counts towards every developer on the team.
   router.post('/:id/review', requireRole('client'), (req, res) => {
     const row = load(req.params.id);
     if (!isOwner(row, req.user)) throw new HttpError(404, 'Request not found');
@@ -183,7 +227,9 @@ export function requestRoutes({ db, requireAuth, requireRole }) {
     const comment = typeof req.body.comment === 'string' ? req.body.comment.trim().slice(0, 1000) : '';
     transaction(db, () => {
       db.prepare('INSERT INTO reviews (request_id, rating, comment) VALUES (?, ?, ?)').run(row.id, rating, comment);
-      db.prepare('UPDATE developer_profiles SET rating_total = rating_total + ?, rating_count = rating_count + 1 WHERE user_id = ?').run(rating, row.developer_id);
+      db.prepare(
+        'UPDATE developer_profiles SET rating_total = rating_total + ?, rating_count = rating_count + 1 WHERE user_id IN (SELECT developer_id FROM request_team WHERE request_id = ?)',
+      ).run(rating, row.id);
       logEvent(row.id, req.user.id, `left a ${rating}-star review`);
     });
     res.status(201).json({ review: { rating, comment } });

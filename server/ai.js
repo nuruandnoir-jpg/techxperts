@@ -10,7 +10,8 @@ const ScopeSchema = z.object({
   category: z.enum(CATEGORY_IDS),
   skills: z.array(z.string()).describe('2-5 skills needed, preferably from the known skill list'),
   urgency: z.enum(['standard', 'priority', 'emergency']),
-  estimateHours: z.number().int().describe('Rough effort estimate in hours'),
+  estimateHours: z.number().int().describe('Rough total effort estimate in hours'),
+  teamSize: z.number().int().describe('Developers needed on the team, 1 to 5'),
   summary: z.string().describe('2-3 sentence brief a developer can act on'),
 });
 
@@ -21,7 +22,8 @@ Categories: ${CATEGORY_IDS.map((id) => `${id} (${CATEGORIES[id].label})`).join('
 Known skills: ${ALL_SKILLS.join(', ')}.
 
 Pick "emergency" only when something is down, hacked or losing money right now; "priority" when there is a near deadline; otherwise "standard".
-Keep the estimate realistic for one experienced developer.`;
+Suggest the smallest team that can deliver well: 1 for fixes and small tasks, 2-3 for a product or app build, up to 5 only for large multi-part builds.
+Keep the estimate realistic for experienced developers.`;
 
 let client = null;
 function getClient() {
@@ -52,6 +54,8 @@ export function heuristicScope(description) {
 
   const words = description.trim().split(/\s+/).length;
   const estimateHours = best === 'maintenance' ? 3 : Math.min(80, Math.max(4, Math.round(words / 4)));
+  const building = /\b(build|app|platform|product|mvp|launch|marketplace|saas)\b/.test(text);
+  const teamSize = best === 'maintenance' || best === 'consulting' ? 1 : building ? (words > 40 ? 3 : 2) : 1;
   const firstSentence = description.trim().split(/(?<=[.!?])\s/)[0];
   const title = firstSentence.length > 80 ? `${firstSentence.slice(0, 77)}...` : firstSentence;
 
@@ -61,7 +65,8 @@ export function heuristicScope(description) {
     skills,
     urgency,
     estimateHours,
-    summary: `${CATEGORIES[best].label} job, ${urgency} urgency, roughly ${estimateHours} hours of work. Best fit: a developer skilled in ${skills.join(', ')}.`,
+    teamSize,
+    summary: `${CATEGORIES[best].label} job, ${urgency} urgency, roughly ${estimateHours} hours of work. Best fit: ${teamSize > 1 ? `a team of ${teamSize} developers` : 'a developer'} skilled in ${skills.join(', ')}.`,
     source: 'heuristic',
   };
 }
@@ -80,7 +85,8 @@ export async function scopeRequest(description) {
       messages: [{ role: 'user', content: description }],
     });
     if (response.stop_reason === 'refusal' || !response.parsed_output) return heuristicScope(description);
-    return { ...response.parsed_output, source: 'claude' };
+    const scope = response.parsed_output;
+    return { ...scope, teamSize: Math.min(5, Math.max(1, scope.teamSize)), source: 'claude' };
   } catch (err) {
     console.warn('AI scoping failed, using heuristic:', err.message);
     return heuristicScope(description);

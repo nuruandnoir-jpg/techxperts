@@ -33,6 +33,17 @@ async function api(path, { method, body } = {}) {
   return data;
 }
 
+// Each navigation bumps routeSeq. Data loaded for a page the user has already left is
+// dropped, so a slow request can't draw over the page they moved to.
+let routeSeq = 0;
+const STALE = Symbol('stale');
+async function load(path) {
+  const seq = routeSeq;
+  const data = await api(path);
+  if (seq !== routeSeq) throw STALE;
+  return data;
+}
+
 function setSession(session) {
   state.token = session?.token ?? null;
   state.user = session?.user ?? null;
@@ -52,11 +63,11 @@ const go = (hash) => { location.hash = hash; };
 
 const ICONS = { web: '⌘', ai: '✦', maintenance: '⚙', devops: '☁', consulting: '◎' };
 const SERVICE_COPY = {
-  web: 'Websites, web apps, dashboards, APIs and mobile apps built by vetted engineers.',
-  ai: 'Chatbots, LLM features, RAG search and automations that save your team hours.',
-  maintenance: 'Bug fixes, updates, security patches, speed tuning and uptime monitoring.',
-  devops: 'Deployments, CI/CD, cloud migrations, Docker and infrastructure as code.',
-  consulting: 'Architecture reviews, stack choices, MVP scoping and fractional CTO help.',
+  web: 'Websites, web apps and mobile apps.',
+  ai: 'Chatbots, AI tools and automation.',
+  maintenance: 'Fixes, updates, security and speed.',
+  devops: 'Hosting, deployment and cloud setup.',
+  consulting: 'Advice on tools, tech and planning.',
 };
 const STATUS_FLOW = ['open', 'assigned', 'in_progress', 'review', 'completed'];
 const STATUS_LABEL = { open: 'Open', assigned: 'Assigned', in_progress: 'In progress', review: 'In review', completed: 'Completed', cancelled: 'Cancelled' };
@@ -75,6 +86,14 @@ const timeAgo = (iso) => {
     if (s >= secs) { const n = Math.floor(s / secs); return `${n} ${unit}${n > 1 ? 's' : ''} ago`; }
   }
 };
+const formatDate = (iso) => new Date(`${iso}T00:00:00`).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+const daysLeft = (iso) => Math.ceil((new Date(`${iso}T23:59:59`) - Date.now()) / 864e5);
+const dueLabel = (iso) => {
+  const d = daysLeft(iso);
+  return `${formatDate(iso)} · ${d < 0 ? 'overdue' : d === 0 ? 'due today' : `${d} day${d > 1 ? 's' : ''} left`}`;
+};
+const teamLabel = (r) => `${r.team.length} of ${r.teamSize} developer${r.teamSize > 1 ? 's' : ''}`;
+const onTeam = (r, user) => r.team.some((d) => d.id === user.id);
 const loading = () => { app.innerHTML = '<div class="empty"><div class="spinner" style="margin:auto"></div></div>'; };
 const errorBox = (msg) => `<div class="error" role="alert">${esc(msg)}</div>`;
 
@@ -101,79 +120,97 @@ function devCard(d) {
 
 // ---------- navigation ----------
 
+const menuBtn = document.querySelector('.menu-btn');
+const topActions = document.getElementById('top-actions');
+
 function renderNav() {
   const u = state.user;
-  const links = [['#/developers', 'Developers'], ['#/#services', 'Services'], ['#/#pricing', 'Pricing']];
-  const authed = u
-    ? `<a href="#/dashboard">Dashboard</a>
-       ${u.role === 'client' ? '<a class="btn ai" href="#/new">✦ AI Assistant</a>' : ''}
-       <a href="#/logout" title="Signed in as ${esc(u.email)}">Sign out</a>`
-    : `<a href="#/signup?role=developer">For developers</a><a href="#/login">Sign in</a><a class="btn ai" href="#/new">✦ AI Assistant</a><a class="btn primary" href="#/signup">Get started</a>`;
-  nav.innerHTML = links.map(([h, t]) => `<a href="${h}">${t}</a>`).join('') + authed;
+  const links = [
+    ['#/', 'Home'], ['#/developers', 'Find developers'], ['#/#services', 'What we do'], ['#/#how', 'How it works'], ['#/#pricing', 'Pricing'],
+    ...(u ? [['#/dashboard', 'Dashboard'], ['#/logout', 'Sign out']] : [['#/signup?role=developer', 'For developers'], ['#/login', 'Sign in']]),
+  ];
+  nav.innerHTML = `<div class="container"><ul>${links.map(([h, t]) => `<li><a href="${h}">${t}</a></li>`).join('')}</ul>
+    ${u ? `<p class="hint">Signed in as ${esc(u.email)}</p>` : ''}</div>`;
   const current = location.hash.split('?')[0] || '#/';
   nav.querySelectorAll('a').forEach((a) => a.classList.toggle('active', a.getAttribute('href') === current));
+
+  const account = u
+    ? `<a class="top-link" href="#/dashboard">Dashboard</a>`
+    : `<a class="top-link" href="#/login">Sign in</a>`;
+  const ai = !u || u.role === 'client'
+    ? `<a class="split-btn" href="#/new"><span class="ico" aria-hidden="true">✦</span><span class="lbl">AI Assistant</span></a>`
+    : `<a class="split-btn" href="#/dashboard"><span class="ico" aria-hidden="true">▤</span><span class="lbl">Job board</span></a>`;
+  topActions.innerHTML = account + ai;
 }
 
-document.querySelector('.nav-toggle').addEventListener('click', (e) => {
-  const open = nav.classList.toggle('open');
-  e.currentTarget.setAttribute('aria-expanded', open);
-});
+function setMenu(open) {
+  nav.classList.toggle('open', open);
+  menuBtn.setAttribute('aria-expanded', open);
+  menuBtn.querySelector('.ico').textContent = open ? '✕' : '☰';
+}
+menuBtn.addEventListener('click', () => setMenu(!nav.classList.contains('open')));
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false); });
+document.addEventListener('click', (e) => { if (!e.target.closest('.topbar')) setMenu(false); });
 
 // ---------- views ----------
 
+// [chip label, text it fills in]
 const EXAMPLES = [
-  'My WordPress site is down and showing a database error',
-  'Add an AI chatbot that answers questions from our help docs',
-  'Build a booking web app for my salon with online payments',
-  'Move our app to AWS with Docker and automatic deploys',
+  ['Fix my website', 'My website is broken and needs fixing'],
+  ['Add an AI chatbot', 'Add an AI chatbot to my website'],
+  ['Build a web app', 'Build a web app for my business'],
+  ['Speed up my site', 'My website is slow and needs speeding up'],
+];
+
+// Tech shown in the scrolling strip: [name, glyph]
+const TECH = [
+  ['React', '⚛'], ['Next.js', 'N'], ['Node.js', '⬢'], ['Python', 'Py'], ['Claude AI', '✦'], ['OpenAI', '◎'],
+  ['AWS', '☁'], ['Google Cloud', 'G'], ['Docker', '▣'], ['WordPress', 'W'], ['Shopify', 'S'], ['Stripe', '$'],
+  ['Figma', '◐'], ['Flutter', '◆'], ['PostgreSQL', 'Pg'],
 ];
 
 async function viewHome() {
-  const [stats, { developers }] = await Promise.all([api('/stats'), api('/developers?available=true')]);
+  const [stats, { developers }] = await Promise.all([load('/stats'), load('/developers?available=true')]);
   app.innerHTML = `
     <section class="hero bleed">
       <div class="hero-media">
-        <picture>
-          <source media="(max-width: 900px)" srcset="/images/hero-sm.jpg" />
-          <img src="/images/hero.jpg" alt="Two developers reviewing a project together at a computer" width="1800" height="1198" fetchpriority="high" />
-        </picture>
-        <span class="float purple" style="top:14%;right:5%">AI-scoped in seconds</span>
-        <span class="float orange" style="bottom:12%;right:8%">Emergency fixes in &lt; 1 hr</span>
+        <video id="hero-video" muted loop playsinline preload="metadata" poster="/media/hero-poster.jpg" aria-hidden="true"></video>
       </div>
       <div class="hero-copy">
-        <span class="eyebrow"><span class="dot"></span> ${stats.available} developers available now</span>
-        <h1><span class="soft">Code &amp; AI,</span> backed by <span class="hl">experts</span></h1>
-        <p class="lead">On-demand developers for coding, AI, cloud and site maintenance. Describe the job in plain words, our AI scopes it, and you're matched in minutes.</p>
-        <form class="searchbar" id="hero-form" role="search">
-          <input id="hero-desc" placeholder="What do you need? e.g. fix my slow WordPress site" required minlength="15" aria-label="Describe what you need" />
-          <button class="btn primary caps">Find a developer</button>
-        </form>
-        <div class="chips">${EXAMPLES.map((e) => `<button type="button" class="chip">${esc(e)}</button>`).join('')}</div>
+        <h1><span class="soft">Your tech team,</span> <span>on your</span> <span>timeline</span></h1>
+        <p class="lead">Get a team of developers to build your product. You set the deadline.</p>
+        <div class="hero-actions">
+          <a class="btn primary caps" href="${state.user?.role === 'developer' ? '#/dashboard' : '#/new'}">Build my team</a>
+          <a class="btn outline caps" href="#/developers">Find developers</a>
+        </div>
+        <p class="dev-link">Are you a developer? <a href="#/signup?role=developer">Join here →</a></p>
         <div class="hero-tiles">
-          <a class="tile video" href="#/#how" aria-label="See how it works">
-            <span><span class="k">const</span> brief = <span class="k">await</span> <span class="f">ai</span>.scope(job);<br><span class="k">const</span> dev = match(brief);<br>dev.<span class="f">ship</span>(<span class="s">'✓'</span>);</span>
+          <button type="button" class="tile video" id="play-video" aria-label="Play video">
+            <img src="/images/hero-sm.jpg" alt="Two developers working together at a computer" loading="lazy" />
             <span class="play" aria-hidden="true">▶</span>
-            <span class="cap">See how it works</span>
-          </a>
+          </button>
           <div class="tile stat">
-            <div class="avatars">${developers.slice(0, 3).map((d) => avatar(d)).join('')}<a class="arrow" href="#/developers" aria-label="Browse developers">↗</a></div>
+            <div class="avatars">${developers.slice(0, 2).map((d) => avatar(d)).join('')}<a class="arrow" href="#/developers" aria-label="Browse developers">↗</a></div>
             <b>Over ${Math.floor(developers.reduce((n, d) => n + d.jobsCompleted, 0) / 10) * 10}</b>
-            <span>jobs delivered, rated ${stats.avgRating ?? '4.8'}★ on average</span>
+            <span>jobs delivered by our teams</span>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="strip bleed" aria-label="Technologies">
+    <section class="strip bleed" aria-label="Technologies we work with">
       <div class="strip-inner">
-        <span class="strip-label">Experts in</span>
-        ${[['React', '⚛', '#3c096c'], ['Python', 'Py', '#5a189a'], ['Claude AI', '✦', '#7b2cbf'], ['AWS', '☁', '#9d4edd'], ['WordPress', 'W', '#5a189a'], ['Docker', '▣', '#3c096c']]
-          .map(([name, glyph, color]) => `<span class="logo"><i style="background:${color}">${glyph}</i>${name}</span>`).join('')}
+        <span class="strip-label">We work with</span>
+        <div class="marquee">
+          <div class="marquee-track">
+            ${[0, 1].map((copy) => `<ul class="logos" ${copy ? 'aria-hidden="true"' : ''}>${TECH.map(([name, glyph]) => `<li class="logo"><i>${glyph}</i>${name}</li>`).join('')}</ul>`).join('')}
+          </div>
+        </div>
       </div>
     </section>
 
     <section class="section" id="services">
-      <div class="section-head"><div><h2>What our developers handle</h2><p class="muted">One platform for every tech job, big or small.</p></div></div>
+      <div class="section-head"><div><h2>What your team can do</h2><p class="muted">From a quick fix to a full product.</p></div></div>
       <div class="grid">
         ${state.catalog.categories.map((c) => `
           <div class="card">
@@ -190,57 +227,67 @@ async function viewHome() {
         <span class="confetti c1" style="top:10%;left:30%"></span>
         <span class="confetti c3" style="top:20%;right:14%"></span>
         <span class="confetti c4" style="top:44%;left:4%"></span>
-        <span class="float sky" style="top:26%;left:2%">Matched: 100%</span>
+        <span class="float sky" style="top:26%;left:2%">Team matched</span>
         <div class="scope-card">
-          <div class="q">“Our checkout page breaks on mobile and we're losing sales.”</div>
+          <div class="q">“Build a booking app for my salon by March 1.”</div>
           <div class="ai-box" style="margin:0"><strong>✦ AI brief</strong>
-            <div class="tags" style="margin-top:8px"><span class="tag">Web & App</span><span class="tag">React</span><span class="tag">CSS</span></div>
-            <p class="hint" style="margin:8px 0 0">Emergency · about 4 hours · response within 1 hour</p>
+            <div class="tags" style="margin-top:8px"><span class="tag">Team of 2</span><span class="tag">React</span><span class="tag">Node.js</span></div>
+            <p class="hint" style="margin:8px 0 0">Due in 3 weeks · about 60 hours</p>
           </div>
         </div>
       </div>
       <div>
-        <h2>How It Works</h2>
-        <p class="muted">From "something's broken" to "it's fixed" without hiring, interviews or agencies.</p>
+        <h2>How it works</h2>
         <ol class="how-steps">
-          <li><div><h3>Describe the job</h3><p>Write it the way you'd explain it to a friend. Our AI turns it into a clear brief with skills, urgency and an estimate.</p></div></li>
-          <li><div><h3>Get matched</h3><p>We rank developers by skills, availability and ratings. Pick one yourself, or let the first qualified expert claim it.</p></div></li>
-          <li><div><h3>Track &amp; approve</h3><p>Chat in the job room, follow progress, approve the work when you're happy, then leave a review.</p></div></li>
+          <li><div><h3>Tell us what you're building</h3><p>Share your idea and your deadline. AI turns it into a clear plan.</p></div></li>
+          <li><div><h3>Get your team</h3><p>We match the right developers. Pick them, or let them join.</p></div></li>
+          <li><div><h3>Ship on time</h3><p>Chat with your team, track progress and approve the work.</p></div></li>
         </ol>
-        <a class="btn primary caps" style="margin-top:24px" href="${state.user ? '#/new' : '#/signup?role=client'}">Post your first job</a>
+        <a class="btn primary caps" style="margin-top:24px" href="${state.user ? '#/new' : '#/signup?role=client'}">Build my team</a>
       </div>
     </section>
 
     <section class="section">
-      <div class="section-head"><div><h2>Available developers</h2><p class="muted">Ready to start today.</p></div><a class="btn" href="#/developers">Browse all →</a></div>
+      <div class="section-head"><div><h2>Developers ready to join your team</h2></div><a class="btn" href="#/developers">See all →</a></div>
       <div class="grid">${developers.slice(0, 3).map(devCard).join('')}</div>
     </section>
 
     <section class="section" id="pricing">
-      <h2>Simple pricing</h2>
-      <p class="muted">Developers set their own hourly rates. Pick how you want to work.</p>
+      <h2>Pricing</h2>
+      <p class="muted">Developers set their own rates.</p>
       <div class="grid" style="margin-top:20px">
-        <div class="card plan"><h3>On-demand</h3><div class="price">Pay as you go</div><ul><li>Post unlimited requests</li><li>Hourly rates from $50</li><li>Pay only for approved work</li></ul></div>
-        <div class="card plan featured"><span class="badge open">Most popular</span><h3 style="margin-top:10px">Site Care</h3><div class="price">$199<small>/month</small></div><ul><li>Monthly updates & backups</li><li>Uptime & security monitoring</li><li>4 hours of fixes included</li><li>Priority response</li></ul></div>
-        <div class="card plan"><h3>Dedicated</h3><div class="price">Custom</div><ul><li>A developer or team on retainer</li><li>Emergency response within 1 hour</li><li>Fractional CTO available</li></ul></div>
+        <div class="card plan"><h3>Quick fix</h3><div class="price">Pay as you go</div><ul><li>One developer</li><li>From $50 an hour</li><li>Pay only for approved work</li></ul></div>
+        <div class="card plan"><h3>Site Care</h3><div class="price">$199<small>/month</small></div><ul><li>Updates and backups</li><li>Security checks</li><li>4 hours of fixes</li><li>Fast response</li></ul></div>
+        <div class="card plan featured"><span class="badge open">Most popular</span><h3 style="margin-top:10px">Product team</h3><div class="price">Custom</div><ul><li>A team of 2 to 5 developers</li><li>Works to your deadline</li><li>Scale up or down anytime</li></ul></div>
       </div>
     </section>
 
     <section class="section card cta">
       <h2>Are you a developer?</h2>
-      <p>Join TechXperts, set your rate and get matched with clients who need your skills.</p>
-      <a class="btn lg" href="#/signup?role=developer">Apply as a developer</a>
+      <p>Join client teams. Set your own rate.</p>
+      <a class="btn lg" href="#/signup?role=developer">Join as a developer</a>
     </section>`;
 
-  const desc = document.getElementById('hero-desc');
-  app.querySelectorAll('.chip').forEach((chip) => chip.addEventListener('click', () => { desc.value = chip.textContent; desc.focus(); }));
-  document.getElementById('hero-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    sessionStorage.setItem('tx_draft', desc.value);
-    if (!state.user) { toast('Create a free client account to post your request'); go('#/signup?role=client'); }
-    else if (state.user.role !== 'client') toast('Sign in with a client account to post requests');
-    else go('#/new');
-  });
+  // Background video: the smaller file on phones, and a still poster for people who prefer less motion.
+  const video = document.getElementById('hero-video');
+  video.src = matchMedia('(max-width: 900px)').matches ? '/media/hero-loop-sm.mp4' : '/media/hero-loop.mp4';
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) video.play().catch(() => {});
+  document.getElementById('play-video').addEventListener('click', openVideo);
+
+}
+
+function openVideo() {
+  const dialog = document.createElement('dialog');
+  dialog.className = 'video-dialog';
+  dialog.innerHTML = `
+    <button type="button" class="video-close" aria-label="Close video">✕</button>
+    <video src="/media/hero.mp4" controls autoplay playsinline poster="/media/hero-poster.jpg"></video>`;
+  document.body.append(dialog);
+  const close = () => dialog.close();
+  dialog.querySelector('.video-close').addEventListener('click', close);
+  dialog.addEventListener('click', (e) => { if (e.target === dialog) close(); });
+  dialog.addEventListener('close', () => dialog.remove());
+  dialog.showModal();
 }
 
 async function viewDevelopers(params) {
@@ -248,7 +295,7 @@ async function viewDevelopers(params) {
   const category = params.get('category') ?? '';
   const available = params.get('available') === 'true';
   const qs = new URLSearchParams({ ...(q && { q }), ...(category && { category }), ...(available && { available: 'true' }) });
-  const { developers } = await api(`/developers?${qs}`);
+  const { developers } = await load(`/developers?${qs}`);
   app.innerHTML = `
     <div class="page-head"><h1>Find a developer</h1></div>
     <form class="filters" id="filters">
@@ -272,7 +319,7 @@ async function viewDevelopers(params) {
 }
 
 async function viewDeveloper(id) {
-  const { developer: d, reviews } = await api(`/developers/${id}`);
+  const { developer: d, reviews } = await load(`/developers/${id}`);
   app.innerHTML = `
     <div class="split">
       <div>
@@ -311,11 +358,11 @@ async function viewDeveloper(id) {
 const AUTH_PERKS = {
   developer: {
     title: 'Grow your freelance work with TechXperts',
-    perks: ['Get matched to jobs that fit your skills', 'Set your own hourly rate and availability', 'AI-scoped briefs, so you know exactly what to build', 'Build a reputation with ratings and reviews'],
+    perks: ['Join client teams that fit your skills', 'Set your own hourly rate and availability', 'AI-scoped briefs, so you know exactly what to build', 'Build a reputation with ratings and reviews'],
   },
   client: {
-    title: 'An expert developer, whenever you need one',
-    perks: ['Describe the job in plain words, our AI scopes it', 'Get ranked matches by skills, availability and rating', 'Chat with your developer and track progress', 'Pay only for work you approve'],
+    title: 'Your tech team, on your timeline',
+    perks: ['Get a team of developers for your product', 'You set the deadline', 'Chat with your team and track progress', 'Pay only for work you approve'],
   },
 };
 
@@ -394,7 +441,10 @@ function viewAuth(mode, params) {
       try {
         setSession(await api(signup ? '/auth/register' : '/auth/login', { body }));
         toast(signup ? 'Welcome to TechXperts!' : `Welcome back, ${state.user.name.split(' ')[0]}`);
-        go(state.user.role === 'client' && sessionStorage.getItem('tx_draft') ? '#/new' : state.user.role === 'developer' && signup ? '#/dashboard?tab=profile' : '#/dashboard');
+        const next = sessionStorage.getItem('tx_next');
+        sessionStorage.removeItem('tx_next');
+        if (state.user.role === 'client' && next) go(next);
+        else go(state.user.role === 'developer' && signup ? '#/dashboard?tab=profile' : '#/dashboard');
       } catch (err) {
         document.getElementById('auth-error').innerHTML = errorBox(err.message);
         btn.disabled = false;
@@ -413,7 +463,9 @@ function requestItem(r) {
           <span>${esc(categoryLabel(r.category))}</span>
           ${r.urgency !== 'standard' ? badge(r.urgency) : ''}
           ${r.budget ? `<span>Budget $${r.budget.toLocaleString()}</span>` : ''}
-          ${state.user.role === 'developer' ? `<span>${esc(r.client.name)}</span>` : r.developer ? `<span>with ${esc(r.developer.name)}</span>` : ''}
+          <span>Team: ${teamLabel(r)}</span>
+          ${r.deadline ? `<span>Due ${formatDate(r.deadline)}</span>` : ''}
+          ${state.user.role === 'developer' ? `<span>${esc(r.client.name)}</span>` : ''}
           <span>${timeAgo(r.updatedAt)}</span>
         </div>
       </div>
@@ -423,7 +475,7 @@ function requestItem(r) {
 
 async function viewDashboard(params) {
   if (!state.user) return go('#/login');
-  const { requests } = await api('/requests');
+  const { requests } = await load('/requests');
   const first = state.user.name.split(' ')[0];
 
   if (state.user.role === 'client') {
@@ -438,9 +490,9 @@ async function viewDashboard(params) {
   }
 
   const tab = params.get('tab') ?? 'jobs';
-  const open = requests.filter((r) => r.status === 'open');
-  const mine = requests.filter((r) => r.developer?.id === state.user.id);
-  const { developer: me } = await api('/developers/me');
+  const open = requests.filter((r) => r.status === 'open' && !onTeam(r, state.user));
+  const mine = requests.filter((r) => onTeam(r, state.user));
+  const { developer: me } = await load('/developers/me');
   app.innerHTML = `
     <div class="page-head">
       <div><h1>Hi ${esc(first)} 👋</h1><p class="muted" style="margin:4px 0 0">You're currently ${badge(me.availability)}</p></div>
@@ -493,19 +545,20 @@ async function viewDashboard(params) {
 }
 
 function viewNewRequest() {
-  if (!state.user) return go('#/signup?role=client');
+  if (!state.user) { sessionStorage.setItem('tx_next', '#/new'); return go('#/signup?role=client'); }
   if (state.user.role !== 'client') { app.innerHTML = '<div class="card empty">Only client accounts can post requests.</div>'; return; }
   const draft = sessionStorage.getItem('tx_draft') ?? '';
   sessionStorage.removeItem('tx_draft');
 
   app.innerHTML = `
     <div class="narrow" style="max-width:760px">
-      <div class="page-head"><h1>Get a developer</h1></div>
+      <div class="page-head"><h1>Build your team</h1></div>
       <form class="card" id="req-form">
         <div id="req-error"></div>
         <div class="field">
           <label for="description">Describe what you need</label>
           <textarea id="description" name="description" required minlength="15" placeholder="What's the problem or goal? Include links, tech you use and any deadline.">${esc(draft)}</textarea>
+          <div class="chips">${EXAMPLES.map(([label, text]) => `<button type="button" class="chip" data-text="${esc(text)}">${esc(label)}</button>`).join('')}</div>
         </div>
         <button type="button" class="btn" id="scope-btn">✦ Scope with AI</button>
         <div id="ai-out"></div>
@@ -519,13 +572,18 @@ function viewNewRequest() {
           <div class="field"><label for="estimateHours">Estimated hours</label><input id="estimateHours" name="estimateHours" type="number" min="1" max="2000" /></div>
           <div class="field"><label for="budget">Budget (USD) <span class="hint">(optional)</span></label><input id="budget" name="budget" type="number" min="0" /></div>
         </div>
+        <div class="row">
+          <div class="field"><label for="teamSize">Team size</label><select id="teamSize" name="teamSize">${[1, 2, 3, 4, 5].map((n) => `<option value="${n}">${n} developer${n > 1 ? 's' : ''}</option>`).join('')}</select></div>
+          <div class="field"><label for="deadline">Deadline <span class="hint">(optional)</span></label><input id="deadline" name="deadline" type="date" min="${new Date().toISOString().slice(0, 10)}" /></div>
+        </div>
         <input type="hidden" name="aiSummary" id="aiSummary" />
-        <button class="btn primary lg">Post request & see matches</button>
+        <button class="btn primary lg">Post job & see your team</button>
       </form>
     </div>`;
 
   const form = document.getElementById('req-form');
   const scopeBtn = document.getElementById('scope-btn');
+  form.querySelectorAll('.chip').forEach((chip) => chip.addEventListener('click', () => { form.description.value = chip.dataset.text; form.description.focus(); }));
 
   async function runScope() {
     const description = form.description.value.trim();
@@ -539,6 +597,7 @@ function viewNewRequest() {
       form.urgency.value = scope.urgency;
       form.skills.value = scope.skills.join(', ');
       form.estimateHours.value = scope.estimateHours;
+      form.teamSize.value = String(scope.teamSize ?? 1);
       form.aiSummary.value = scope.summary;
       document.getElementById('ai-out').innerHTML = `
         <div class="ai-box"><strong>✦ AI brief</strong> <span class="hint">(${scope.source === 'claude' ? 'by Claude' : 'quick estimate'})</span>
@@ -557,7 +616,7 @@ function viewNewRequest() {
     body.skills = body.skills.split(',').map((s) => s.trim()).filter(Boolean);
     try {
       const { request } = await api('/requests', { body });
-      toast('Request posted!');
+      toast('Job posted!');
       go(`#/requests/${request.id}`);
     } catch (err) { document.getElementById('req-error').innerHTML = errorBox(err.message); }
   });
@@ -565,15 +624,17 @@ function viewNewRequest() {
 
 async function viewRequest(id) {
   if (!state.user) return go('#/login');
-  const { request: r, messages, review, matches } = await api(`/requests/${id}`);
+  const { request: r, messages, review, matches } = await load(`/requests/${id}`);
   const u = state.user;
   const isClient = r.client.id === u.id;
-  const isDev = r.developer?.id === u.id;
+  const isDev = onTeam(r, u);
+  const spotsLeft = r.teamSize - r.team.length;
   const step = STATUS_FLOW.indexOf(r.status);
 
   const actions = [];
-  if (u.role === 'developer' && r.status === 'open') actions.push(['accept', 'Accept this job', 'primary']);
-  if (isDev && r.status === 'assigned') actions.push(['in_progress', 'Start work', 'primary'], ['open', 'Release job', '']);
+  if (u.role === 'developer' && r.status === 'open' && !isDev) actions.push(['accept', r.teamSize > 1 ? 'Join this team' : 'Accept this job', 'primary']);
+  if (isDev && r.status === 'assigned') actions.push(['in_progress', 'Start work', 'primary']);
+  if (isDev && ['open', 'assigned'].includes(r.status)) actions.push(['leave', 'Leave team', '']);
   if (isDev && r.status === 'in_progress') actions.push(['review', 'Submit for review', 'primary']);
   if (isClient && r.status === 'review') actions.push(['completed', 'Approve & complete', 'primary'], ['in_progress', 'Request changes', '']);
   if (isClient && ['open', 'assigned'].includes(r.status)) actions.push(['cancelled', 'Cancel request', 'danger']);
@@ -596,13 +657,13 @@ async function viewRequest(id) {
 
         ${matches.length ? `
           <div class="card">
-            <h2 style="font-size:1.2rem">Top matches for this job</h2>
-            <p class="muted">Assign a developer now, or wait for one to accept from the job board.</p>
+            <h2 style="font-size:1.2rem">Build your team</h2>
+            <p class="muted">${spotsLeft} spot${spotsLeft > 1 ? 's' : ''} left. Add developers now, or wait for them to join from the job board.</p>
             <div class="req-list">${matches.map((d) => `
               <div class="actions" style="justify-content:space-between;border-top:1px solid var(--border);padding-top:12px">
                 <div class="dev-top">${avatar(d)}<div><a class="dev-name" href="#/developers/${d.id}">${esc(d.name)}</a>
                   <div class="hint">${esc(d.headline)} · $${d.hourlyRate}/hr · <b>${d.matchScore}% match</b></div></div></div>
-                <button class="btn small primary" data-assign="${d.id}">Assign</button>
+                <button class="btn small primary" data-assign="${d.id}">Add to team</button>
               </div>`).join('')}</div>
           </div>` : ''}
 
@@ -612,7 +673,7 @@ async function viewRequest(id) {
             <div class="timeline" id="timeline">${messages.map((m) => m.kind === 'event'
               ? `<div class="event"><b>${esc(m.sender?.name ?? 'System')}</b> ${esc(m.body)} · ${timeAgo(m.createdAt)}</div>`
               : `<div class="msg ${m.sender?.id === u.id ? 'mine' : ''}"><div class="who">${esc(m.sender?.name)} · ${timeAgo(m.createdAt)}</div>${esc(m.body)}</div>`).join('')}</div>
-            ${r.developer || isClient ? `
+            ${r.team.length || isClient ? `
               <form id="msg-form" class="actions" style="flex-wrap:nowrap">
                 <input name="body" placeholder="Write a message…" required maxlength="4000" aria-label="Message" />
                 <button class="btn primary">Send</button>
@@ -621,7 +682,7 @@ async function viewRequest(id) {
 
         ${isClient && r.status === 'completed' && !review ? `
           <form class="card" id="review-form">
-            <h2 style="font-size:1.2rem">Rate ${esc(r.developer.name)}</h2>
+            <h2 style="font-size:1.2rem">Rate ${r.team.length > 1 ? 'your team' : esc(r.team[0]?.name ?? 'the developer')}</h2>
             <div class="star-input" id="star-input">${[1, 2, 3, 4, 5].map((n) => `<button type="button" data-star="${n}" aria-label="${n} stars">★</button>`).join('')}</div>
             <div class="field" style="margin-top:12px"><textarea name="comment" placeholder="How did it go? (optional)"></textarea></div>
             <button class="btn primary">Submit review</button>
@@ -636,8 +697,13 @@ async function viewRequest(id) {
           <dt>Estimate</dt><dd>${r.estimateHours ? `${r.estimateHours} hours` : '—'}</dd>
           <dt>Budget</dt><dd>${r.budget ? `$${r.budget.toLocaleString()}` : 'Open'}</dd>
           <dt>Client</dt><dd>${esc(r.client.name)}${r.client.company ? ` · ${esc(r.client.company)}` : ''}</dd>
-          <dt>Developer</dt><dd>${r.developer ? `<a href="#/developers/${r.developer.id}">${esc(r.developer.name)}</a>` : 'Not assigned'}</dd>
+          <dt>Deadline</dt><dd>${r.deadline ? esc(dueLabel(r.deadline)) : 'Flexible'}</dd>
+          <dt>Team</dt><dd>${teamLabel(r)}</dd>
         </dl>
+        <ul class="team-list">
+          ${r.team.map((d) => `<li>${avatar(d)}<div><a class="dev-name" href="#/developers/${d.id}">${esc(d.name)}</a>${d.id === r.developer?.id && r.team.length > 1 ? ' <span class="tag">Lead</span>' : ''}<div class="hint">${esc(d.headline ?? '')}</div></div></li>`).join('')}
+          ${Array.from({ length: Math.max(0, spotsLeft) }, () => '<li class="open-spot"><div class="avatar" aria-hidden="true">+</div><div class="hint">Open spot</div></li>').join('')}
+        </ul>
         ${r.skills.length ? `<div class="tags" style="margin-top:16px">${r.skills.map((s) => `<span class="tag">${esc(s)}</span>`).join('')}</div>` : ''}
       </aside>
     </div>`;
@@ -651,10 +717,12 @@ async function viewRequest(id) {
   app.querySelectorAll('[data-action]').forEach((b) => b.addEventListener('click', () => {
     const a = b.dataset.action;
     if (a === 'cancelled' && !confirm('Cancel this request?')) return;
-    act(() => (a === 'accept' ? api(`/requests/${id}/accept`, { body: {} }) : api(`/requests/${id}/status`, { body: { status: a } })), 'Updated');
+    if (a === 'leave' && !confirm('Leave this team?')) return;
+    const call = a === 'accept' || a === 'leave' ? api(`/requests/${id}/${a}`, { body: {} }) : api(`/requests/${id}/status`, { body: { status: a } });
+    act(() => call, 'Updated');
   }));
   app.querySelectorAll('[data-assign]').forEach((b) => b.addEventListener('click', () =>
-    act(() => api(`/requests/${id}/assign`, { body: { developerId: Number(b.dataset.assign) } }), 'Developer assigned')));
+    act(() => api(`/requests/${id}/assign`, { body: { developerId: Number(b.dataset.assign) } }), 'Added to the team')));
   document.getElementById('msg-form')?.addEventListener('submit', (e) => {
     e.preventDefault();
     act(() => api(`/requests/${id}/messages`, { body: { body: e.target.body.value } }), 'Message sent');
@@ -679,12 +747,13 @@ async function viewRequest(id) {
 // ---------- router ----------
 
 async function route() {
+  const seq = ++routeSeq;
   const raw = location.hash.slice(1) || '/';
   const [pathPart, query = ''] = raw.split('?');
   const [path, anchor] = pathPart.split('#');
   const params = new URLSearchParams(query);
   const parts = path.split('/').filter(Boolean);
-  nav.classList.remove('open');
+  setMenu(false);
   app.classList.toggle('home', !parts.length);
   renderNav();
 
@@ -699,8 +768,10 @@ async function route() {
     else if (parts[0] === 'requests' && parts[1]) await viewRequest(parts[1]);
     else app.innerHTML = '<div class="card empty"><h2>Page not found</h2><a href="#/">Go home</a></div>';
   } catch (err) {
+    if (err === STALE) return;
     app.innerHTML = `<div class="narrow">${errorBox(err.message)}<a href="#/">Go home</a></div>`;
   }
+  if (seq !== routeSeq) return;
 
   if (anchor) document.getElementById(anchor)?.scrollIntoView();
   else window.scrollTo(0, 0);

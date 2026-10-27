@@ -61,15 +61,15 @@ export function seed(db) {
     const { lastInsertRowid: clientId } = insertUser.run('client', 'Jordan Blake', 'client@techxperts.dev', password, 'Blake Studio');
     const { lastInsertRowid: reqId } = db
       .prepare(
-        `INSERT INTO requests (client_id, title, description, category, urgency, skills, budget, estimate_hours, ai_summary)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO requests (client_id, title, description, category, urgency, skills, budget, estimate_hours, team_size, deadline, ai_summary)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, date('now', '+21 days'), ?)`,
       )
       .run(
         clientId,
         'Add an AI support chatbot to our website',
         'We want a chatbot on our marketing site that answers customer questions using our help docs and hands off to email when it is unsure.',
-        'ai', 'standard', JSON.stringify(['LLM Integration', 'RAG', 'JavaScript']), 2500, 30,
-        'Build a retrieval-backed support assistant over existing help docs, embedded on the marketing site, with email hand-off.',
+        'ai', 'standard', JSON.stringify(['LLM Integration', 'RAG', 'JavaScript']), 2500, 30, 2,
+        'A team of 2: one AI engineer for the retrieval-backed assistant over the help docs, one frontend developer to embed it on the site with email hand-off.',
       );
     db.prepare("INSERT INTO messages (request_id, sender_id, kind, body) VALUES (?, ?, 'event', 'posted the request')").run(reqId, clientId);
   });

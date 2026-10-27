@@ -45,10 +45,14 @@ export function requestView(row) {
     skills: parseJson(row.skills),
     budget: row.budget,
     estimateHours: row.estimate_hours,
+    teamSize: row.team_size,
+    deadline: row.deadline,
     aiSummary: row.ai_summary,
     status: row.status,
     client: { id: row.client_id, name: row.client_name, company: row.client_company },
+    // Team lead (first developer to join); the full team is attached by the route.
     developer: row.developer_id ? { id: row.developer_id, name: row.developer_name } : null,
+    team: [],
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -74,6 +78,16 @@ export function stringList(value, field, { maxItems = 20 } = {}) {
   if (value === undefined) return [];
   if (!Array.isArray(value) || value.some((v) => typeof v !== 'string')) throw new HttpError(400, `${field} must be a list of strings`);
   return [...new Set(value.map((v) => v.trim()).filter(Boolean))].slice(0, maxItems);
+}
+
+/** Validates an optional YYYY-MM-DD date that must not be in the past. */
+export function optionalFutureDate(value, field) {
+  if (value === undefined || value === null || value === '') return null;
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value) || Number.isNaN(Date.parse(value))) {
+    throw new HttpError(400, `${field} must be a date (YYYY-MM-DD)`);
+  }
+  if (value < new Date().toISOString().slice(0, 10)) throw new HttpError(400, `${field} can't be in the past`);
+  return value;
 }
 
 export function oneOf(value, field, allowed, fallback) {

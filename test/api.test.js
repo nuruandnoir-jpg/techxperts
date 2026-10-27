@@ -114,3 +114,52 @@ test('client can assign a matched developer directly', async () => {
   const res = await api(`/requests/${data.request.id}/assign`, { token: client, body: { developerId: devs[0].id } });
   assert.equal(res.data.request.developer.id, devs[0].id);
 });
+
+test('team jobs recruit until full, then the team works together', async () => {
+  const client = await login('client@techxperts.dev');
+  const [kenji, amara, lucas] = await Promise.all(['kenji', 'amara', 'lucas'].map((n) => login(`${n}@techxperts.dev`)));
+  const deadline = new Date(Date.now() + 14 * 864e5).toISOString().slice(0, 10);
+
+  const past = await api('/requests', {
+    token: client,
+    body: { title: 'Too late job', description: 'This job has a deadline in the past', category: 'web', deadline: '2000-01-01' },
+  });
+  assert.equal(past.status, 400);
+
+  const { data } = await api('/requests', {
+    token: client,
+    body: { title: 'Build our booking app', description: 'Build a booking web app with an AI assistant', category: 'web', teamSize: 2, deadline },
+  });
+  const id = data.request.id;
+  assert.equal(data.request.teamSize, 2);
+  assert.equal(data.request.deadline, deadline);
+
+  let r = (await api(`/requests/${id}/accept`, { token: kenji, body: {} })).data.request;
+  assert.equal(r.status, 'open', 'still recruiting with 1 of 2');
+  assert.equal(r.team.length, 1);
+  assert.equal((await api(`/requests/${id}/accept`, { token: kenji, body: {} })).status, 409, 'cannot join twice');
+
+  r = (await api(`/requests/${id}/accept`, { token: amara, body: {} })).data.request;
+  assert.equal(r.status, 'assigned', 'full team');
+  assert.deepEqual(r.team.map((d) => d.name).sort(), ['Amara Okafor', 'Kenji Watanabe']);
+  assert.equal((await api(`/requests/${id}/accept`, { token: lucas, body: {} })).status, 409, 'team is full');
+
+  // A member leaves before work starts; the job reopens and someone else can join.
+  r = (await api(`/requests/${id}/leave`, { token: kenji, body: {} })).data.request;
+  assert.equal(r.status, 'open');
+  assert.equal(r.developer.name, 'Amara Okafor', 'lead passes to the remaining member');
+  await api(`/requests/${id}/accept`, { token: lucas, body: {} });
+
+  // Any team member can move the job forward and post in the job room.
+  assert.equal((await api(`/requests/${id}/status`, { token: lucas, body: { status: 'in_progress' } })).data.request.status, 'in_progress');
+  assert.equal((await api(`/requests/${id}/leave`, { token: lucas, body: {} })).status, 409, 'cannot leave once started');
+  assert.equal((await api(`/requests/${id}/messages`, { token: amara, body: { body: 'Frontend is underway' } })).status, 201);
+  assert.equal((await api(`/requests/${id}/messages`, { token: kenji, body: { body: 'hi' } })).status, 403, 'former member');
+  await api(`/requests/${id}/status`, { token: amara, body: { status: 'review' } });
+  await api(`/requests/${id}/status`, { token: client, body: { status: 'completed' } });
+  await api(`/requests/${id}/review`, { token: client, body: { rating: 5, comment: 'Great team' } });
+
+  const lucasProfile = (await api('/developers?q=Lucas')).data.developers[0];
+  const reviews = (await api(`/developers/${lucasProfile.id}`)).data.reviews;
+  assert.ok(reviews.some((rv) => rv.comment === 'Great team'), 'review counts for every member');
+});

@@ -37,11 +37,21 @@ CREATE TABLE IF NOT EXISTS requests (
   skills          TEXT NOT NULL DEFAULT '[]',
   budget          INTEGER,
   estimate_hours  INTEGER,
+  team_size       INTEGER NOT NULL DEFAULT 1 CHECK (team_size BETWEEN 1 AND 5),
+  deadline        TEXT,
   ai_summary      TEXT,
   status          TEXT NOT NULL DEFAULT 'open'
                   CHECK (status IN ('open', 'assigned', 'in_progress', 'review', 'completed', 'cancelled')),
   created_at      TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at      TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Developers on a job's team. requests.developer_id is the team lead.
+CREATE TABLE IF NOT EXISTS request_team (
+  request_id    INTEGER NOT NULL REFERENCES requests(id) ON DELETE CASCADE,
+  developer_id  INTEGER NOT NULL REFERENCES users(id),
+  joined_at     TEXT NOT NULL DEFAULT (datetime('now')),
+  PRIMARY KEY (request_id, developer_id)
 );
 
 CREATE TABLE IF NOT EXISTS messages (
@@ -64,13 +74,23 @@ CREATE INDEX IF NOT EXISTS idx_requests_client ON requests(client_id);
 CREATE INDEX IF NOT EXISTS idx_requests_developer ON requests(developer_id);
 CREATE INDEX IF NOT EXISTS idx_requests_status ON requests(status);
 CREATE INDEX IF NOT EXISTS idx_messages_request ON messages(request_id);
+CREATE INDEX IF NOT EXISTS idx_team_developer ON request_team(developer_id);
 `;
+
+// Brings databases created before team support up to date.
+function migrate(db) {
+  const columns = new Set(db.prepare('PRAGMA table_info(requests)').all().map((c) => c.name));
+  if (!columns.has('team_size')) db.exec('ALTER TABLE requests ADD COLUMN team_size INTEGER NOT NULL DEFAULT 1');
+  if (!columns.has('deadline')) db.exec('ALTER TABLE requests ADD COLUMN deadline TEXT');
+  db.exec('INSERT OR IGNORE INTO request_team (request_id, developer_id) SELECT id, developer_id FROM requests WHERE developer_id IS NOT NULL');
+}
 
 export function openDatabase(dbPath = process.env.DB_PATH || 'data/techxperts.db') {
   if (dbPath !== ':memory:') fs.mkdirSync(path.dirname(path.resolve(dbPath)), { recursive: true });
   const db = new DatabaseSync(dbPath);
   db.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;');
   db.exec(SCHEMA);
+  migrate(db);
   return db;
 }
 
