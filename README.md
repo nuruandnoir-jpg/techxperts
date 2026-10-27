@@ -1,6 +1,6 @@
-# TechXperts
+# Tech and AI Xperts
 
-Your tech team, on your timeline. Clients describe what they're building, set a deadline and a team size, and TechXperts assembles a team of vetted developers to deliver it. Teams handle product builds, AI work, cloud/DevOps and site maintenance, from a quick fix (a team of one) to a full product (a team of up to five).
+Your tech team, on your timeline. Clients describe what they're building, set a deadline and a team size, and Tech and AI Xperts assembles a team of vetted developers to deliver it. Teams handle product builds, AI work, cloud/DevOps and site maintenance, from a quick fix (a team of one) to a full product (a team of up to five).
 
 ## Features
 

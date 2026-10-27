@@ -1,4 +1,4 @@
-// TechXperts single-page app: hash routing, a tiny API client and view renderers.
+// Tech and AI Xperts single-page app: hash routing, a tiny API client and view renderers.
 import { icon } from './icons.js';
 
 const app = document.getElementById('app');
@@ -389,7 +389,7 @@ async function viewDeveloper(id) {
 
 const AUTH_PERKS = {
   developer: {
-    title: 'Grow your freelance work with TechXperts',
+    title: 'Grow your freelance work with Tech and AI Xperts',
     perks: ['Join client teams that fit your skills', 'Set your own hourly rate and availability', 'AI-scoped briefs, so you know exactly what to build', 'Build a reputation with ratings and reviews'],
   },
   client: {
@@ -472,7 +472,7 @@ function viewAuth(mode, params) {
       btn.disabled = true;
       try {
         setSession(await api(signup ? '/auth/register' : '/auth/login', { body }));
-        toast(signup ? 'Welcome to TechXperts!' : `Welcome back, ${state.user.name.split(' ')[0]}`);
+        toast(signup ? 'Welcome to Tech and AI Xperts!' : `Welcome back, ${state.user.name.split(' ')[0]}`);
         const next = sessionStorage.getItem('tx_next');
         sessionStorage.removeItem('tx_next');
         if (state.user.role === 'client' && next) go(next);
@@ -822,7 +822,7 @@ async function init() {
     console.error(err);
     app.innerHTML = `
       <div class="narrow card empty">
-        <h2>We can't reach TechXperts right now</h2>
+        <h2>We can't reach Tech and AI Xperts right now</h2>
         <p>Please check your connection and try again in a moment.</p>
         <button type="button" class="btn primary caps" id="retry">Try again</button>
         <p class="hint" style="margin-top:16px">Details: ${esc(err.message)}</p>

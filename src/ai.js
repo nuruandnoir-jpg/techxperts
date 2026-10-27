@@ -15,7 +15,7 @@ const ScopeSchema = z.object({
   summary: z.string().describe('2-3 sentence brief a developer can act on'),
 });
 
-const SYSTEM_PROMPT = `You scope incoming client requests for TechXperts, an on-demand developer platform.
+const SYSTEM_PROMPT = `You scope incoming client requests for Tech and AI Xperts, a platform that assembles on-demand developer teams.
 Turn the client's description into a structured brief that routes the job to the right developer.
 
 Categories: ${CATEGORY_IDS.map((id) => `${id} (${CATEGORIES[id].label})`).join(', ')}.
