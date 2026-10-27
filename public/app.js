@@ -309,29 +309,17 @@ async function viewHome() {
       </div>
     </section>
 
-    <section class="section how band bleed" id="how">
-      <div class="visual light panel" aria-hidden="true">
-        <span class="confetti c1" style="top:10%;left:30%"></span>
-        <span class="confetti c3" style="top:20%;right:14%"></span>
-        <span class="confetti c4" style="top:44%;left:4%"></span>
-        <span class="float sky" style="top:26%;left:2%"><span class="tick">${icon('check', { size: 12 })}</span>Team matched</span>
-        <div class="scope-card">
-          <div class="q">“Build a booking app for my salon by March 1.”</div>
-          <div class="ai-box" style="margin:0"><strong>${icon('sparkles', { size: 16 })} AI brief</strong>
-            <div class="tags" style="margin-top:8px"><span class="tag">Team of 2</span><span class="tag">React</span><span class="tag">Node.js</span></div>
-            <p class="hint" style="margin:8px 0 0">Due in 3 weeks · about 60 hours</p>
-          </div>
-        </div>
-      </div>
-      <div>
+    <section class="how bleed" id="how">
+      <div class="how-head">
         <h2>From idea to launch in three steps</h2>
-        <ol class="how-steps">
-          <li><div><h3>Share your idea</h3><p>Tell us what you're building and when you need it. AI turns it into a clear plan.</p></div></li>
-          <li><div><h3>Meet your team</h3><p>Hand-picked experts join your project. Choose them yourself, or let them come to you.</p></div></li>
-          <li><div><h3>Launch on time</h3><p>Chat with your team, watch progress live and approve every milestone.</p></div></li>
-        </ol>
-        <a class="btn primary caps" style="margin-top:24px" href="${state.user ? '#/new' : '#/signup?role=client'}">Start my project</a>
+        <p class="muted">No hiring, no agencies. Just a clear path from your idea to a finished product.</p>
       </div>
+      <ol class="how-steps">
+        <li><span class="how-num">01</span><h3>Share your idea</h3><p>Tell us what you're building and when you need it. AI turns it into a clear plan.</p></li>
+        <li><span class="how-num">02</span><h3>Meet your team</h3><p>Hand-picked experts join your project. Choose them yourself, or let them come to you.</p></li>
+        <li><span class="how-num">03</span><h3>Launch on time</h3><p>Chat with your team, watch progress live and approve every milestone.</p></li>
+      </ol>
+      <div class="how-cta"><a class="btn primary caps" href="${state.user ? '#/new' : '#/signup?role=client'}">Start my project</a></div>
     </section>
 
     <section class="section">
