@@ -79,9 +79,8 @@ app.notFound((c) => c.json({ error: 'Not found' }, 404));
 /**
  * Creates the tables, loads demo data into an empty database when DEMO_DATA is "true",
  * and resolves the login-token secret: AUTH_SECRET if set, otherwise a random secret
- * generated once and kept in the settings table. Runs once per Worker isolate.
+ * generated once and kept in the settings table. Every step is safe to repeat.
  */
-const ready = new WeakMap();
 async function setup(env) {
   const db = env.DB;
   if (!db) throw new Error('No D1 database is bound as DB. Check the d1_databases binding in wrangler.toml.');
@@ -102,10 +101,13 @@ async function setup(env) {
   return (await one(db, "SELECT value FROM settings WHERE key = 'auth_secret'")).value;
 }
 
+// Only the resolved secret is cached, never a pending promise: in Workers, a request
+// that awaits a promise created by another request can hang. Requests that arrive
+// before setup has finished each run setup themselves.
+let cachedSecret = null;
 app.use('*', async (c, next) => {
-  const key = c.env.DB ?? c.env;
-  if (!ready.has(key)) ready.set(key, setup(c.env).catch((err) => { ready.delete(key); throw err; }));
-  c.set('secret', await ready.get(key));
+  if (!cachedSecret || (c.env.AUTH_SECRET && c.env.AUTH_SECRET !== cachedSecret)) cachedSecret = await setup(c.env);
+  c.set('secret', cachedSecret);
   await next();
 });
 
@@ -125,7 +127,8 @@ const requireRole = (...roles) => async (c, next) => {
   await next();
 };
 
-app.get('/health', (c) => c.json({ ok: true }));
+export const VERSION = '2026-10-27.2';
+app.get('/health', (c) => c.json({ ok: true, version: VERSION, database: Boolean(c.env.DB) }));
 
 app.get('/catalog', (c) =>
   c.json({

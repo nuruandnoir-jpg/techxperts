@@ -22,11 +22,17 @@ function safeSet(key, value) {
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
 async function api(path, { method, body } = {}) {
-  const res = await fetch(`/api${path}`, {
-    method: method ?? (body ? 'POST' : 'GET'),
-    headers: { 'content-type': 'application/json', ...(state.token && { authorization: `Bearer ${state.token}` }) },
-    body: body && JSON.stringify(body),
-  });
+  let res;
+  try {
+    res = await fetch(`/api${path}`, {
+      method: method ?? (body ? 'POST' : 'GET'),
+      headers: { 'content-type': 'application/json', ...(state.token && { authorization: `Bearer ${state.token}` }) },
+      body: body && JSON.stringify(body),
+      signal: AbortSignal.timeout(15000),
+    });
+  } catch (err) {
+    throw new Error(err.name === 'TimeoutError' ? 'The server took too long to respond. Please try again.' : "Can't reach the server. Check your connection.");
+  }
   const data = await res.json().catch(() => ({}));
   if (res.status === 401 && state.token) setSession(null);
   if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
@@ -817,6 +823,7 @@ async function init() {
         <h2>We can't reach TechXperts right now</h2>
         <p>Please check your connection and try again in a moment.</p>
         <button type="button" class="btn primary caps" id="retry">Try again</button>
+        <p class="hint" style="margin-top:16px">Details: ${esc(err.message)}</p>
       </div>`;
     document.getElementById('retry').addEventListener('click', init);
     return;
