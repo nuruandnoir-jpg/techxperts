@@ -383,7 +383,12 @@ main.seo { padding: 0; }
 }
 
 /* Pricing: packages and the team builder */
-.packages { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: 20px; }
+.packages { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin-top: 20px; }
+.packages .plan { position: relative; }
+.plan-tag { position: absolute; top: -11px; left: 20px; padding: 3px 10px; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; background: var(--p300); color: var(--p900); }
+.promises { list-style: none; display: flex; flex-wrap: wrap; gap: 10px 28px; justify-content: center; margin: 22px 0 0; padding: 0; color: var(--text); font-weight: 500; font-size: .93rem; }
+.promises li { display: inline-flex; align-items: center; gap: 6px; }
+.promises .icon { color: var(--p500); }
 .packages .plan { display: flex; flex-direction: column; margin: 0; }
 .packages .plan h3 { margin-bottom: 8px; }
 .packages .plan p { flex: 1; margin: 8px 0 18px; color: var(--muted); }
@@ -407,7 +412,8 @@ main.seo { padding: 0; }
 .builder-total b { font-family: var(--display); font-size: 2.6rem; line-height: 1.1; font-variant-numeric: lining-nums; color: var(--p600); }
 [data-theme="dark"] .builder-total b { color: var(--p300); }
 .builder-summary .hint { margin: 6px 0 0; }
-@media (max-width: 1000px) { .packages { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 1100px) { .packages { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .packages { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 860px) { .builder { grid-template-columns: 1fr; } }
 @media (max-width: 560px) {
   .packages, .builder-roles ul { grid-template-columns: 1fr; }
@@ -537,3 +543,75 @@ main.seo { padding: 0; }
 }
 .toast { position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 120px); background: var(--text); color: var(--bg); padding: 12px 20px; border-radius: 12px; font-weight: 600; transition: transform .25s, visibility .25s; visibility: hidden; z-index: 50; max-width: calc(100% - 32px); }
 .toast.show { transform: translate(-50%, 0); visibility: visible; }
+
+
+/* ===================================================================
+   Friendly refresh: rounded shapes, chunky 3D buttons, Xpert mascot logo.
+   Comes last so it overrides the sharper styles above.
+   =================================================================== */
+:root { --radius: 18px; --r-btn: 14px; --press: var(--p800); }
+[data-theme="dark"] { --press: #0a0020; }
+
+/* Logo */
+.brand { gap: 10px; }
+.brand-logo { width: 42px; height: 42px; background: none; border-radius: 0; display: block; }
+.brand-name { font-family: 'Nunito', var(--heading); font-weight: 900; font-size: 1.42rem; letter-spacing: -0.02em; }
+.brand-name b { font-weight: 900; }
+.footer .brand-logo { width: 48px; height: 48px; }
+.footer .brand-name { font-size: 1.6rem; }
+.drawer-head .brand-logo { width: 36px; height: 36px; }
+@media (max-width: 640px) { .brand-logo { width: 34px; height: 34px; } .brand-name { font-size: 1.05rem; } }
+
+/* Buttons: rounded, bold, with a pressable 3D edge */
+.btn { border-radius: var(--r-btn); border-width: 2px; font-weight: 700; padding: 11px 20px; box-shadow: 0 4px 0 var(--border); transition: transform .08s, box-shadow .08s, filter .15s, background .15s; }
+.btn:hover { filter: brightness(1.04); }
+.btn:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 0 0 transparent; }
+.btn.primary { background: var(--p500); border-color: var(--p500); color: #fff; box-shadow: 0 4px 0 var(--p700); }
+.btn.light, .footer-cta, .cta .btn { background: var(--p200); border-color: var(--p200); color: var(--p900); box-shadow: 0 4px 0 var(--p400); }
+.btn.outline { box-shadow: 0 4px 0 color-mix(in srgb, var(--text) 18%, transparent); }
+.btn.caps { letter-spacing: .05em; font-weight: 800; }
+.btn:disabled { box-shadow: none; }
+.hero .btn.primary, [data-theme="dark"] .hero .btn.primary { background: var(--p500); border-color: var(--p500); color: #fff; }
+.split-btn { border-radius: var(--r-btn); overflow: hidden; box-shadow: 0 4px 0 var(--p800); height: 40px; transition: transform .08s, box-shadow .08s; }
+.split-btn:active { transform: translateY(4px); box-shadow: none; }
+.split-btn .lbl { font-weight: 700; }
+.theme-toggle, .menu-btn, .drawer-close { border-radius: 12px; }
+.theme-toggle { border-width: 2px; box-shadow: 0 3px 0 var(--border); }
+.menu-btn { box-shadow: 0 3px 0 var(--p800); }
+
+/* Inputs */
+input, textarea, select { border-radius: 12px; border-width: 2px; }
+input:focus, textarea:focus, select:focus { border-color: var(--p400); outline: 3px solid color-mix(in srgb, var(--p300) 40%, transparent); outline-offset: 0; }
+
+/* Hero finder: a pill toggle on a rounded card */
+.finder { background: #fff; border-radius: 22px; padding: 10px; box-shadow: 0 6px 0 rgb(16 0 43 / 30%), 0 24px 50px rgb(0 0 0 / 28%); max-width: 620px; }
+.finder-tabs { background: #f3e6ff; border-radius: 16px; padding: 5px; gap: 5px; }
+.finder-tabs button { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 12px; background: transparent; color: #5a189a; font-weight: 800; padding: 10px 14px; transition: background .15s, color .15s; }
+.finder-tabs button:hover { background: rgb(255 255 255 / 60%); }
+.finder-tabs button.on { background: #7b2cbf; color: #fff; box-shadow: 0 3px 0 #3c096c; }
+.finder-body { box-shadow: none; padding: 12px 4px 4px; background: transparent; }
+.finder-body input { border-radius: 14px; padding: 13px 16px; }
+.finder-note { padding-left: 6px; font-weight: 600; }
+
+/* Cards, photos, sections */
+.card, .role-photo, .seo-photos img, .builder-summary, .seo-regions article, .tile { border-radius: var(--radius); }
+.card { border-width: 2px; box-shadow: 0 4px 0 var(--border); }
+.grid .card:hover { box-shadow: 0 8px 0 var(--p300); }
+.role-photo { box-shadow: 0 5px 0 var(--p300); }
+.cta.card { box-shadow: none; }
+.tag, .badge { border-radius: 999px; }
+.service-icon { border-radius: 14px; }
+.drawer-body a { border-radius: 12px; }
+.drawer-body a.active::before { border-radius: 3px; }
+
+/* Pricing */
+.packages .plan { border-width: 2px; }
+.packages .price { font-size: 1.55rem; line-height: 1.15; display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 2px; }
+.packages .price .from { flex-basis: 100%; font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.packages .plan.featured .price .from { color: #cbb4ea; }
+.plan-tag { border-radius: 999px; padding: 4px 12px; }
+.plan.featured { box-shadow: 0 6px 0 var(--p600); }
+.promises .icon { background: var(--p500); color: #fff; border-radius: 50%; padding: 2px; }
+.stepper { border-radius: 12px; overflow: hidden; border-width: 2px; }
+.builder-summary { border-radius: 16px; }
+@media (max-width: 420px) { .finder-tabs button { font-size: .86rem; padding: 10px 8px; gap: 6px; white-space: nowrap; } .finder-tabs button .icon { display: none; } }

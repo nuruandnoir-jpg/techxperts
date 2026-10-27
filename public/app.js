@@ -272,24 +272,32 @@ function stopRotator() {
 }
 
 // ---------- pricing ----------
-// Hourly rates (USD) used by the team builder. Package prices below are built from them.
+// Client hourly rates (USD) for a senior-level expert in each role, used by the team builder.
+// Mid-level and expert-level are priced with LEVELS. Package prices below are built from these.
 const ROLE_RATES = [
-  ['Full-stack developer', 50], ['Mobile developer', 55], ['AI engineer', 70], ['Cybersecurity expert', 75],
-  ['Cloud & DevOps engineer', 65], ['UI/UX designer', 45], ['QA tester', 35], ['Tech consultant', 60],
+  ['Full-stack developer', 45], ['Mobile developer', 48], ['AI engineer', 60], ['Cybersecurity expert', 60],
+  ['Cloud & DevOps engineer', 55], ['UI/UX designer', 40], ['QA tester', 30], ['Tech consultant', 60],
 ];
+// [label, multiplier on the senior rate]
+const LEVELS = [['Mid-level', 0.78], ['Senior', 1], ['Expert / lead', 1.4]];
 const MAX_TEAM = 5; // the most developers a job can have
 const usd = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 
-// [name, price, unit, summary, prefill for the job form]
+// What every client gets, whatever they buy.
+const PROMISES = ['No long-term contracts', '2-week risk-free trial', 'No fee to hire your developer directly', 'Pay only for approved work'];
+
+// [name, price, unit, summary, prefill for the job form, featured]
 const PACKAGES = [
-  ['Quick fix', '$50', '/hour', 'One developer for a fix or a small task.',
+  ['Quick fix', '$45', '/hour', 'A senior developer for a bug, a change or a small task. No minimum.',
     { description: 'I need one developer for a quick fix: ', teamSize: 1 }],
-  ['Site Care', '$199', '/month', 'Updates, backups, security checks and 4 hours of fixes.',
-    { description: 'Monthly site care for my website: updates, backups, security checks and fixes.', teamSize: 1 }],
-  ['Launch', 'From $6,000', '', 'An MVP built by 2 developers in 4 weeks.',
-    { description: 'Build an MVP of my product with a team of 2 developers in about 4 weeks.', teamSize: 2, estimateHours: 120, budget: 6000 }],
-  ['Product team', 'From $12,000', '/month', '3 developers, part-time, on your deadline.',
-    { description: 'A product team of 3 developers, part-time, to build and grow my product.', teamSize: 3, estimateHours: 240, budget: 12000 }],
+  ['Site Care', '$249', '/month', 'Monitoring, updates, backups, security checks and 4 hours of fixes.',
+    { description: 'Monthly site care for my website: monitoring, updates, backups, security checks and fixes.', teamSize: 1 }],
+  ['Launch', 'From $9,600', '', 'Your MVP in 4 weeks: a senior and a mid-level developer, 30 hours a week each.',
+    { description: 'Build an MVP of my product in about 4 weeks with a senior and a mid-level developer.', teamSize: 2, estimateHours: 240, budget: 9600 }],
+  ['Dedicated developer', 'From $5,600', '/month', 'One full-time developer on your team. Senior from $7,200.',
+    { description: 'I need one full-time dedicated developer for my product.', teamSize: 1, estimateHours: 160, budget: 5600 }],
+  ['Product team', 'From $15,200', '/month', 'A senior lead, a full-time developer and a part-time QA tester.',
+    { description: 'A product team: a senior lead, a full-time developer and a part-time QA tester.', teamSize: 3, estimateHours: 400, budget: 15200 }, true],
 ];
 
 function pricingSection() {
@@ -297,14 +305,16 @@ function pricingSection() {
     <section class="section" id="pricing">
       <h2>Packages</h2>
       <div class="packages">
-        ${PACKAGES.map(([name, price, unit, summary], i) => `
-          <div class="card plan ${i === 3 ? 'featured' : ''}">
+        ${PACKAGES.map(([name, price, unit, summary, , featured], i) => `
+          <div class="card plan ${featured ? 'featured' : ''}">
+            ${featured ? '<span class="plan-tag">Most popular</span>' : ''}
             <h3>${name}</h3>
-            <div class="price">${price}<small>${unit}</small></div>
+            <div class="price">${price.startsWith('From ') ? `<span class="from">From</span>${price.slice(5)}` : price}<small>${unit}</small></div>
             <p>${summary}</p>
-            <button type="button" class="btn ${i === 3 ? 'light' : ''}" data-package="${i}">Get started</button>
+            <button type="button" class="btn ${featured ? 'light' : ''}" data-package="${i}">Get started</button>
           </div>`).join('')}
       </div>
+      <ul class="promises">${PROMISES.map((p) => `<li>${icon('check', { size: 16 })}${p}</li>`).join('')}</ul>
 
       <div class="builder card" id="builder">
         <div class="builder-roles">
@@ -312,7 +322,7 @@ function pricingSection() {
           <ul>
             ${ROLE_RATES.map(([role, rate], i) => `
               <li>
-                <span class="builder-role">${role}<small>${usd(rate)}/hour</small></span>
+                <span class="builder-role">${role}<small id="rate-${i}">${usd(rate)}/hour</small></span>
                 <span class="stepper">
                   <button type="button" data-step="-1" data-role="${i}" aria-label="Remove a ${role}">&minus;</button>
                   <output id="count-${i}">0</output>
@@ -322,17 +332,19 @@ function pricingSection() {
           </ul>
         </div>
         <div class="builder-summary">
+          <label for="b-level">Experience</label>
+          <select id="b-level">${LEVELS.map(([l], i) => `<option value="${i}" ${i === 1 ? 'selected' : ''}>${l}</option>`).join('')}</select>
           <label for="b-hours">Hours per week, each</label>
-          <select id="b-hours">${[10, 20, 30, 40].map((h) => `<option value="${h}" ${h === 20 ? 'selected' : ''}>${h} hours</option>`).join('')}</select>
+          <select id="b-hours">${[10, 20, 30, 40].map((h) => `<option value="${h}" ${h === 20 ? 'selected' : ''}>${h === 40 ? '40 hours (full-time)' : `${h} hours`}</option>`).join('')}</select>
           <label for="b-weeks">For how long</label>
-          <select id="b-weeks">${[1, 2, 4, 8, 12, 26].map((w) => `<option value="${w}" ${w === 4 ? 'selected' : ''}>${w} week${w > 1 ? 's' : ''}</option>`).join('')}</select>
+          <select id="b-weeks">${[1, 2, 4, 8, 12, 26, 52].map((w) => `<option value="${w}" ${w === 4 ? 'selected' : ''}>${w === 52 ? '1 year' : `${w} week${w > 1 ? 's' : ''}`}</option>`).join('')}</select>
           <div class="builder-total">
             <span id="b-team">Add people to your team</span>
             <b id="b-price">${usd(0)}</b>
             <span id="b-week" class="hint"></span>
           </div>
           <button type="button" class="btn primary caps" id="b-go" disabled>Build this team</button>
-          <p class="hint">Estimate only. You agree the final price with your team.</p>
+          <p class="hint">Estimate only. Month to month, cancel anytime.</p>
         </div>
       </div>
     </section>`;
@@ -355,9 +367,12 @@ function bindPricing() {
   const counts = ROLE_RATES.map(() => 0);
   const hours = document.getElementById('b-hours');
   const weeks = document.getElementById('b-weeks');
+  const level = document.getElementById('b-level');
+  const rateOf = (i) => Math.round(ROLE_RATES[i][1] * LEVELS[level.value][1]);
   const update = () => {
     const people = counts.reduce((a, b) => a + b, 0);
-    const weekly = counts.reduce((sum, n, i) => sum + n * ROLE_RATES[i][1] * Number(hours.value), 0);
+    const weekly = counts.reduce((sum, n, i) => sum + n * rateOf(i) * Number(hours.value), 0);
+    ROLE_RATES.forEach((_, i) => { document.getElementById(`rate-${i}`).textContent = `${usd(rateOf(i))}/hour`; });
     counts.forEach((n, i) => { document.getElementById(`count-${i}`).textContent = n; });
     app.querySelectorAll('[data-step="1"]').forEach((b) => { b.disabled = people >= MAX_TEAM; });
     app.querySelectorAll('[data-step="-1"]').forEach((b) => { b.disabled = counts[b.dataset.role] === 0; });
@@ -376,9 +391,10 @@ function bindPricing() {
   }));
   hours.addEventListener('change', update);
   weeks.addEventListener('change', update);
+  level.addEventListener('change', update);
   document.getElementById('b-go').addEventListener('click', () => {
     const { people, weekly } = update();
-    const roles = counts.map((n, i) => n && `${n} ${ROLE_RATES[i][0]}${n > 1 ? 's' : ''}`).filter(Boolean);
+    const roles = counts.map((n, i) => n && `${n} ${LEVELS[level.value][0].toLowerCase()} ${ROLE_RATES[i][0]}${n > 1 ? 's' : ''}`).filter(Boolean);
     startJob({
       description: `I'd like a team of ${roles.join(', ')}, about ${hours.value} hours a week each for ${weeks.value} week${weeks.value > 1 ? 's' : ''}.`,
       teamSize: people,
@@ -405,8 +421,8 @@ async function viewHome() {
         <h1><strong>Your tech team,</strong> <span>on your timeline</span></h1>
         <div class="finder">
           <div class="finder-tabs" role="tablist">
-            <button type="button" role="tab" aria-selected="true" class="on" data-finder="hire">Hire a team</button>
-            <button type="button" role="tab" aria-selected="false" data-finder="join">Join as developer</button>
+            <button type="button" role="tab" aria-selected="true" class="on" data-finder="hire">${icon('briefcase', { size: 18 })}Hire a team</button>
+            <button type="button" role="tab" aria-selected="false" data-finder="join">${icon('code', { size: 18 })}Join as developer</button>
           </div>
           <form class="finder-body" id="finder-hire">
             <input id="finder-text" placeholder="What do you need built?" aria-label="What do you need built?" required />
