@@ -421,17 +421,17 @@ async function viewHome() {
         <h1><strong>Your tech team,</strong> <span>on your timeline</span></h1>
         <p class="hero-sub">Hire a single expert or a complete team.</p>
         <div class="finder">
-          <div class="finder-tabs" role="tablist">
+          <div class="finder-tabs" role="tablist" data-active="hire">
             <button type="button" role="tab" aria-selected="true" class="on" data-finder="hire">${icon('briefcase', { size: 18 })}Hire a team</button>
             <button type="button" role="tab" aria-selected="false" data-finder="join">${icon('code', { size: 18 })}Join as developer</button>
           </div>
           <form class="finder-body" id="finder-hire">
             <input id="finder-text" placeholder="What do you need built? One expert or a whole team" aria-label="What do you need built?" required />
-            <button class="btn primary">Find my team</button>
+            <button class="btn primary go">Find my team${icon('arrow-right', { size: 18 })}</button>
           </form>
           <div class="finder-body" id="finder-join" hidden>
             <span class="finder-note">Set your rate. Join client teams.</span>
-            <a class="btn primary" href="#/signup?role=developer">Join now</a>
+            <a class="btn primary go" href="#/signup?role=developer">Join now${icon('arrow-right', { size: 18 })}</a>
           </div>
         </div>
       </div>
@@ -477,6 +477,7 @@ async function viewHome() {
       t.setAttribute('aria-selected', on);
       document.getElementById(`finder-${t.dataset.finder}`).hidden = !on;
     });
+    tab.parentElement.dataset.active = tab.dataset.finder; // slides the highlight across
   }));
   document.getElementById('finder-hire').addEventListener('submit', (e) => {
     e.preventDefault();
