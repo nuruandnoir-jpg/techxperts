@@ -121,6 +121,7 @@ function devCard(d) {
 
 const menuBtn = document.querySelector('.menu-btn');
 const topActions = document.getElementById('top-actions');
+const topnav = document.getElementById('topnav');
 menuBtn.querySelector('.ico').innerHTML = icon('menu');
 
 // ---------- theme ----------
@@ -170,7 +171,15 @@ function renderNav() {
       <a class="btn primary caps" href="${cta[0]}">${cta[1]}</a>
       ${u ? `<p class="hint">Signed in as ${esc(u.email)}</p>` : ''}
     </div>`;
+  // Desktop: the same links sit in the top bar.
+  topnav.innerHTML = [...explore.slice(0, 4), ['#/developers', 'Find developers'], explore[4]]
+    .map(([h, t]) => `<a href="${h}">${t}</a>`).join('');
   const current = location.hash.split('?')[0] || '#/';
+  topnav.querySelectorAll('a').forEach((a) => {
+    const on = a.getAttribute('href') === current;
+    a.classList.toggle('active', on);
+    if (on) a.setAttribute('aria-current', 'page');
+  });
   nav.querySelectorAll('.drawer-body a').forEach((a) => a.classList.toggle('active', a.getAttribute('href') === current));
   nav.querySelector('.drawer-close').addEventListener('click', () => setMenu(false));
   nav.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setMenu(false)));

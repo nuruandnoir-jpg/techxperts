@@ -107,7 +107,24 @@ p { margin: 0 0 12px; }
 
 /* Top bar: menu button left, wordmark centred, actions right */
 .topbar { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--surface) 94%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
-.topbar-inner { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; height: 68px; gap: 16px; }
+.topbar-inner { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; height: 68px; gap: 20px; }
+.topbar-inner .brand { justify-self: start; }
+/* Top-bar links (desktop). Phones use the menu button and drawer instead. */
+.topnav { justify-self: center; display: flex; align-items: center; gap: 2px; }
+.topnav a { position: relative; padding: 8px 10px; font-size: .93rem; font-weight: 500; color: var(--text); white-space: nowrap; }
+.topnav a::after { content: ''; position: absolute; left: 10px; right: 10px; bottom: 2px; height: 2px; background: var(--p500); transform: scaleX(0); transition: transform .2s; }
+.topnav a:hover { text-decoration: none; color: var(--p600); }
+.topnav a:hover::after, .topnav a.active::after { transform: scaleX(1); }
+.topnav a.active { color: var(--p600); }
+[data-theme="dark"] .topnav a:hover, [data-theme="dark"] .topnav a.active { color: var(--p300); }
+.menu-btn { display: none; width: 38px; height: 38px; place-items: center; border: 0; background: var(--p600); color: #fff; cursor: pointer; }
+@media (max-width: 1180px) {
+  .topnav { display: none; }
+  .menu-btn { display: grid; }
+  .topbar-inner { grid-template-columns: auto 1fr auto; }
+  .seo-body .topbar-inner { grid-template-columns: auto 1fr; }
+  .top-actions { justify-self: end; }
+}
 .brand { justify-self: center; display: inline-flex; align-items: center; gap: 10px; white-space: nowrap; color: var(--text); line-height: 1; }
 .brand-logo { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: var(--p500); color: #fff; flex: none; }
 .brand-name { font-family: var(--heading); font-weight: 700; font-size: 1.3rem; letter-spacing: -0.02em; }
@@ -123,7 +140,7 @@ p { margin: 0 0 12px; }
 .split-btn { justify-self: start; display: inline-flex; align-items: stretch; height: 36px; border: 0; padding: 0; background: none; cursor: pointer; font: inherit; color: #fff; text-decoration: none; }
 .split-btn:hover { text-decoration: none; filter: brightness(1.08); }
 .split-btn .ico { display: grid; place-items: center; width: 36px; background: var(--p600); }
-.split-btn .lbl { display: grid; place-items: center; padding: 0 16px; background: var(--p400); font-weight: 500; font-size: .9rem; }
+.split-btn .lbl { display: grid; place-items: center; white-space: nowrap; padding: 0 16px; background: var(--p400); font-weight: 500; font-size: .9rem; }
 /* Menu drawer: slides in from the left over a dimmed page */
 .menu-scrim { position: fixed; inset: 0; z-index: 40; background: rgb(16 0 43 / 45%); backdrop-filter: blur(2px); animation: fade-in .2s ease; }
 .menu-scrim[hidden] { display: none; }
