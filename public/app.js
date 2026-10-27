@@ -206,7 +206,10 @@ async function viewHome() {
   app.innerHTML = `
     <section class="hero bleed">
       <div class="hero-media">
-        <video id="hero-video" muted loop playsinline preload="metadata" poster="/media/hero-poster.jpg" aria-hidden="true"></video>
+        <picture>
+          <source media="(max-width: 900px)" srcset="/images/hero-sm.jpg" />
+          <img src="/images/hero.jpg" alt="Two developers working together at a computer" width="1800" height="1198" fetchpriority="high" />
+        </picture>
       </div>
       <div class="hero-copy">
         <h1><span class="soft">Your tech team,</span> <span>on your</span> <span>timeline</span></h1>
@@ -217,10 +220,12 @@ async function viewHome() {
         </div>
         <p class="dev-link">Are you a developer? <a href="#/signup?role=developer">Join here ${icon('arrow-right', { size: 16 })}</a></p>
         <div class="hero-tiles">
-          <button type="button" class="tile video" id="play-video" aria-label="Play video">
-            <img src="/images/hero-sm.jpg" alt="Two developers working together at a computer" loading="lazy" />
-            <span class="play">${icon('play', { size: 20 })}</span>
-          </button>
+          <a class="tile ai-tile" href="${state.user?.role === 'developer' ? '#/dashboard' : '#/new'}">
+            <span class="ai-tile-icon">${icon('sparkles', { size: 20 })}</span>
+            <b>AI Assistant</b>
+            <span>Describe your idea. Get a plan and a team in minutes.</span>
+            <span class="ai-tile-go">${icon('arrow-up-right', { size: 16 })}</span>
+          </a>
           <div class="tile stat">
             <div class="avatars">${developers.slice(0, 2).map((d) => avatar(d)).join('')}<a class="arrow" href="#/developers" aria-label="Browse developers">${icon('arrow-up-right', { size: 16 })}</a></div>
             <b>Over ${Math.floor(developers.reduce((n, d) => n + d.jobsCompleted, 0) / 10) * 10}</b>
@@ -254,7 +259,7 @@ async function viewHome() {
       </div>
     </section>
 
-    <section class="section how" id="how">
+    <section class="section how band bleed" id="how">
       <div class="visual light panel" aria-hidden="true">
         <span class="confetti c1" style="top:10%;left:30%"></span>
         <span class="confetti c3" style="top:20%;right:14%"></span>
@@ -299,27 +304,6 @@ async function viewHome() {
       <p>Join client teams. Set your own rate.</p>
       <a class="btn lg" href="#/signup?role=developer">Join as a developer</a>
     </section>`;
-
-  // Background video: the smaller file on phones, and a still poster for people who prefer less motion.
-  const video = document.getElementById('hero-video');
-  video.src = matchMedia('(max-width: 900px)').matches ? '/media/hero-loop-sm.mp4' : '/media/hero-loop.mp4';
-  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) video.play().catch(() => {});
-  document.getElementById('play-video').addEventListener('click', openVideo);
-
-}
-
-function openVideo() {
-  const dialog = document.createElement('dialog');
-  dialog.className = 'video-dialog';
-  dialog.innerHTML = `
-    <button type="button" class="video-close" aria-label="Close video">${icon('close')}</button>
-    <video src="/media/hero.mp4" controls autoplay playsinline poster="/media/hero-poster.jpg"></video>`;
-  document.body.append(dialog);
-  const close = () => dialog.close();
-  dialog.querySelector('.video-close').addEventListener('click', close);
-  dialog.addEventListener('click', (e) => { if (e.target === dialog) close(); });
-  dialog.addEventListener('close', () => dialog.remove());
-  dialog.showModal();
 }
 
 async function viewDevelopers(params) {

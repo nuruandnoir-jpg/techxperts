@@ -10,7 +10,6 @@ const ICONS = [
   ['briefcase', '20/solid/briefcase'],
   ['sun', '24/outline/sun'],
   ['moon', '24/outline/moon'],
-  ['play', '24/solid/play'],
   ['arrow-up-right', '20/solid/arrow-up-right'],
   ['arrow-right', '20/solid/arrow-right'],
   ['arrow-left', '20/solid/arrow-left'],
