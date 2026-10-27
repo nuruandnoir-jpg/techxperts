@@ -304,36 +304,27 @@ textarea { resize: vertical; min-height: 110px; }
 .plan.featured ul, .plan.featured .price small { color: #cbb4ea; }
 .plan.featured .badge.open { background: var(--p300); color: var(--p900); }
 
-/* "On demand" band: a fixed label, and one service at a time popping in and out */
+/* "On demand" band: a fixed label and one word at a time rolling into place */
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-.ondemand { background: radial-gradient(500px 200px at 50% 120%, rgb(123 44 191 / 55%), transparent 70%), var(--p900); padding-block: 30px; }
-[data-theme="dark"] .ondemand { background: radial-gradient(500px 200px at 50% 120%, rgb(123 44 191 / 40%), transparent 70%), #0a0020; border-block: 1px solid var(--border); }
-.ondemand-inner { display: flex; align-items: center; justify-content: center; gap: 22px; flex-wrap: wrap; min-height: 56px; }
-.ondemand-label { font-family: var(--display); font-weight: 700; font-size: clamp(1.6rem, 3vw, 2.2rem); text-transform: uppercase; color: #fff; letter-spacing: .02em; }
-.ondemand-stage { position: relative; display: inline-grid; min-width: min(420px, 100%); height: 56px; align-items: center; }
+.ondemand { background: var(--surface); border-block: 1px solid var(--border); padding-block: 34px; }
+.ondemand-inner { display: flex; align-items: baseline; justify-content: center; gap: .4em; flex-wrap: wrap; font-family: var(--display); font-size: clamp(1.7rem, 3.4vw, 2.6rem); line-height: 1.2; }
+.ondemand-label { font-weight: 600; color: #000; }
+[data-theme="dark"] .ondemand-label { color: var(--text); }
+.ondemand-stage { display: inline-block; overflow: hidden; width: 11.5em; height: 1.25em; vertical-align: bottom; text-align: left; }
 .ondemand-item {
-  --tone: var(--p300);
-  display: inline-flex; align-items: center; gap: 12px; justify-self: start;
-  padding: 8px 20px 8px 8px; border-radius: 999px;
-  background: color-mix(in srgb, var(--tone) 16%, transparent); border: 1px solid color-mix(in srgb, var(--tone) 45%, transparent);
-  color: var(--tone); font-family: var(--heading); font-weight: 700; font-size: clamp(1rem, 2vw, 1.25rem); white-space: nowrap;
-  opacity: 0; transform: translateY(70%) scale(.85); filter: blur(6px);
-  transition: opacity .45s ease, transform .55s cubic-bezier(.2, .9, .3, 1.35), filter .45s ease;
+  display: inline-block; font-style: italic; font-weight: 600; color: var(--p600); white-space: nowrap;
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .18em; text-decoration-color: var(--p300);
+  transform: translateY(105%); transition: transform .55s cubic-bezier(.22, .8, .25, 1);
 }
-.ondemand-item.in { opacity: 1; transform: none; filter: none; }
-.ondemand-item.out { opacity: 0; transform: translateY(-70%) scale(.95); filter: blur(4px); transition-duration: .35s; }
-.ondemand-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--tone); color: var(--p900); }
-.ondemand-item.tone-0 { --tone: #e0aaff; }
-.ondemand-item.tone-1 { --tone: #f2c6ff; }
-.ondemand-item.tone-2 { --tone: #c77dff; }
-.ondemand-item.tone-3 { --tone: #ffffff; }
+.ondemand-item.in { transform: none; }
+.ondemand-item.out { transform: translateY(-105%); transition-duration: .35s; transition-timing-function: ease-in; }
+[data-theme="dark"] .ondemand-item { color: var(--p300); text-decoration-color: var(--p500); }
 @media (prefers-reduced-motion: reduce) {
-  .ondemand-item, .ondemand-item.out { transform: none; filter: none; transition: opacity .2s; }
+  .ondemand-item, .ondemand-item.out { transform: none; transition: none; }
 }
 @media (max-width: 640px) {
-  .ondemand-inner { flex-direction: column; gap: 10px; }
-  .ondemand-stage { justify-items: center; min-width: 0; width: 100%; }
-  .ondemand-item { justify-self: center; }
+  .ondemand-inner { flex-direction: column; align-items: center; gap: 2px; text-align: center; }
+  .ondemand-stage { width: 100%; text-align: center; }
 }
 
 /* Role photos above the developer cards */

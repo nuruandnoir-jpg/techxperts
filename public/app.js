@@ -199,12 +199,11 @@ const EXAMPLES = [
 ];
 
 
-// What clients can get on demand, shown one at a time under the hero: [label, icon].
+// What clients can get on demand, shown one at a time under the hero.
 const OFFERINGS = [
-  ['Full-stack developers', 'code'], ['Cybersecurity experts', 'shield'], ['AI & ML engineers', 'ai'],
-  ['Cloud & DevOps engineers', 'cloud'], ['Mobile app developers', 'mobile'], ['UI/UX designers', 'design'],
-  ['Data engineers', 'data'], ['QA & testing', 'bug'], ['Backend & API developers', 'server'],
-  ['Site maintenance', 'wrench'], ['Automation experts', 'terminal'], ['Tech consultants', 'bulb'],
+  'full-stack developers', 'cybersecurity experts', 'AI engineers', 'cloud & DevOps engineers',
+  'mobile app developers', 'UI/UX designers', 'data engineers', 'QA testers',
+  'backend developers', 'site maintenance', 'automation experts', 'tech consultants',
 ];
 
 // Role photos for "Developers ready to join your team": [photo, role, skills, category].
@@ -234,14 +233,13 @@ function rolePhoto([src, role, skills, category], developers, width, height) {
     </a>`;
 }
 
-// Cycles the "On demand" item: each one pops in, holds, then slides out for the next.
+// Cycles the "On demand" word: each one rolls up into place, holds, then rolls away.
 let rotatorTimer = null;
 function startRotator(el) {
   let i = 0;
   const show = () => {
-    const [label, ico] = OFFERINGS[i % OFFERINGS.length];
-    el.className = `ondemand-item tone-${i % 4}`;
-    el.innerHTML = `<span class="ondemand-icon">${icon(ico, { size: 22 })}</span>${esc(label)}`;
+    el.className = 'ondemand-item';
+    el.textContent = OFFERINGS[i % OFFERINGS.length];
     requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('in')));
     rotatorTimer = setTimeout(() => {
       el.classList.add('out');
@@ -292,9 +290,9 @@ async function viewHome() {
 
     <section class="ondemand bleed" aria-label="What you can get on demand">
       <div class="ondemand-inner">
-        <span class="ondemand-label">On demand</span>
+        <span class="ondemand-label">On demand <span aria-hidden="true">&mdash;</span></span>
         <span class="ondemand-stage" aria-hidden="true"><span class="ondemand-item" id="ondemand-item"></span></span>
-        <span class="sr-only">${OFFERINGS.map(([label]) => label).join(', ')}.</span>
+        <span class="sr-only">${OFFERINGS.join(', ')}.</span>
       </div>
     </section>
 
