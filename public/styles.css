@@ -333,7 +333,7 @@ textarea { resize: vertical; min-height: 110px; }
 /* Standalone "Hire tech and AI experts" page (public/hire-tech-and-ai-experts.html) */
 main.seo { padding: 0; }
 .seo-hero { position: relative; color: #fff; padding-block: 72px 80px;
-  background: linear-gradient(90deg, rgb(16 0 43 / 92%) 0%, rgb(16 0 43 / 70%) 55%, rgb(16 0 43 / 35%) 100%), url('/images/hero.jpg') center 30% / cover no-repeat, var(--p900); }
+  background: linear-gradient(90deg, rgb(16 0 43 / 94%) 0%, rgb(16 0 43 / 80%) 55%, rgb(16 0 43 / 45%) 100%), url('/images/team-meeting.jpg') center 30% / cover no-repeat, var(--p900); }
 .crumbs { font-size: .85rem; color: #cbb4ea; margin-bottom: 18px; }
 .crumbs a { color: #e3d0f7; }
 .seo-hero h1 { font-size: clamp(2.4rem, 5.6vw, 4rem); line-height: 1.06; color: #fff; max-width: 15em; }
@@ -696,3 +696,4 @@ input:focus, textarea:focus, select:focus { border-color: var(--p400); outline: 
 .seo-related { margin: 18px 0 0; text-align: center; color: var(--muted); }
 @media (max-width: 1000px) { .seo-usecases, .seo-prices { grid-template-columns: repeat(2, minmax(0, 1fr)); } .seo-body .how-steps:has(li:nth-child(4)) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) { .seo-usecases, .seo-prices, .seo-body .how-steps:has(li:nth-child(4)) { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .seo-hero:not(.seo-hero-ai) { background: linear-gradient(rgb(16 0 43 / 82%), rgb(16 0 43 / 88%)), url('/images/team-meeting.jpg') 55% 30% / cover no-repeat, var(--p900); } }
