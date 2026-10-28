@@ -853,15 +853,6 @@ input:focus, textarea:focus, select:focus { border-color: var(--p400); outline: 
 @media (max-width: 760px) { .pricing-band { padding-block: 64px 72px; } .pricing-band .plan.featured, .pricing-band .plan.featured:hover { transform: none; } }
 @media (prefers-reduced-motion: reduce) { .pricing-band .plan, .pricing-band .plan:hover { transition: none; transform: none; } }
 
-/* Slim strip above the menu bar with the contact email */
-.utility-bar { background: #10002b; color: #d9c4f2; font-size: .85rem; }
-.utility-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 38px; }
-.utility-mail { display: inline-flex; align-items: center; gap: 8px; color: #fff; font-weight: 600; }
-.utility-mail svg { color: var(--p300); flex: none; }
-.utility-mail:hover span { text-decoration: underline; text-underline-offset: 3px; }
-[data-theme="dark"] .utility-bar { background: #08001a; border-bottom: 1px solid rgb(224 170 255 / 10%); }
-@media (max-width: 640px) { .utility-note { display: none; } .utility-inner { justify-content: center; } }
-
 /* SEO day three: /hire-full-stack-developers */
 .seo-hero-fs { background: linear-gradient(90deg, rgb(16 0 43 / 94%) 0%, rgb(16 0 43 / 78%) 52%, rgb(16 0 43 / 35%) 100%), url('/images/dev-fullstack.jpg') 80% 30% / cover no-repeat, var(--p900); }
 @media (max-width: 640px) { .seo-hero-fs { background: linear-gradient(rgb(16 0 43 / 82%), rgb(16 0 43 / 90%)), url('/images/dev-fullstack.jpg') 60% 30% / cover no-repeat, var(--p900); } }
@@ -974,3 +965,17 @@ input:focus, textarea:focus, select:focus { border-color: var(--p400); outline: 
   -webkit-mask-image: radial-gradient(ellipse at center, transparent 20%, #000 75%); mask-image: radial-gradient(ellipse at center, transparent 20%, #000 75%); }
 .xp-sleepy { position: relative; isolation: isolate; overflow: hidden; }
 [data-theme="dark"] .how-line::before, [data-theme="dark"] .xp-sleepy::before { background-image: var(--pattern-dark); }
+
+/* Contact email in the menu bar: the full address on wide screens and when the links fold
+   into the menu, just the envelope in between; on phones it lives in the menu drawer. */
+.top-mail { display: inline-flex; align-items: center; gap: 8px; color: var(--text); font-weight: 500; font-size: .9rem; white-space: nowrap; }
+.top-mail:hover { text-decoration: none; color: var(--p500); }
+.top-mail-ico { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: color-mix(in srgb, var(--p400) 14%, transparent); color: var(--p600); transition: background .2s, color .2s; }
+.top-mail:hover .top-mail-ico { background: var(--p500); color: #fff; }
+[data-theme="dark"] .top-mail-ico { background: rgb(199 125 255 / 16%); color: var(--p200); }
+.top-mail-text { display: none; }
+@media (min-width: 1680px), (min-width: 761px) and (max-width: 1180px) { .top-mail-text { display: inline; } }
+@media (max-width: 640px) { #top-actions .top-mail { display: none; } }
+.drawer-mail { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; font-weight: 600; color: var(--p600); }
+.drawer-mail .icon { color: var(--p500); }
+[data-theme="dark"] .drawer-mail { color: var(--p200); }

@@ -26,6 +26,7 @@ const ICONS = [
   ['brush', '24/outline/paint-brush'],
   ['bug', '24/outline/bug-ant'],
   ['badge', '20/solid/check-badge'],
+  ['mail', '20/solid/envelope'],
 ];
 
 const entries = ICONS.map(([name, file]) => {

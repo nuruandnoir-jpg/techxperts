@@ -154,6 +154,8 @@ darkQuery.addEventListener('change', (e) => {
   applyTheme(e.matches ? 'dark' : 'light');
 });
 
+const CONTACT_EMAIL = 'techxpertts1@gmail.com';
+
 function renderNav() {
   const u = state.user;
   const explore = [['#/', 'Home'], ['#/#team', 'Our experts'], ['#/#how', 'How it works'], ['#/#pricing', 'Pricing'], ['/hire-tech-and-ai-experts', 'Why us']];
@@ -173,6 +175,7 @@ function renderNav() {
     </div>
     <div class="drawer-foot">
       <a class="btn primary caps" href="${cta[0]}">${cta[1]}</a>
+      <a class="drawer-mail" href="mailto:${CONTACT_EMAIL}">${icon('mail', { size: 18 })}${CONTACT_EMAIL}</a>
       ${u ? `<p class="hint">Signed in as ${esc(u.email)}</p>` : ''}
     </div>`;
   // Desktop: the same links sit in the top bar.
@@ -194,7 +197,8 @@ function renderNav() {
   const ai = !u || u.role === 'client'
     ? `<a class="split-btn" href="#/new"><span class="ico">${icon('sparkles', { size: 18 })}</span><span class="lbl">AI Assistant</span></a>`
     : `<a class="split-btn" href="#/dashboard"><span class="ico">${icon('briefcase', { size: 18 })}</span><span class="lbl">Job board</span></a>`;
-  topActions.innerHTML = `<button type="button" class="theme-toggle"></button>${accountLink}${ai}`;
+  const mail = `<a class="top-mail" href="mailto:${CONTACT_EMAIL}" aria-label="Email us at ${CONTACT_EMAIL}" title="${CONTACT_EMAIL}"><span class="top-mail-ico">${icon('mail', { size: 18 })}</span><span class="top-mail-text">${CONTACT_EMAIL}</span></a>`;
+  topActions.innerHTML = `<button type="button" class="theme-toggle"></button>${mail}${accountLink}${ai}`;
   topActions.querySelector('.theme-toggle').addEventListener('click', toggleTheme);
   applyTheme(currentTheme());
 }
