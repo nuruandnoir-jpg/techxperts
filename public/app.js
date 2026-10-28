@@ -601,8 +601,8 @@ async function viewHome() {
   bindHowTrack();
 }
 
-// Xpert in the hero: the laptop opens to say hello, types along while someone describes
-// their idea, shows a heart once the idea is long enough, and blinks its lid when poked.
+// Xpert in the hero: waves hello, types faster while someone describes their idea, cheers
+// once the idea is long enough, and ducks behind the laptop when poked.
 function bindHeroXpert() {
   const poke = document.getElementById('hero-xpert');
   const svg = poke.querySelector('.xpert');

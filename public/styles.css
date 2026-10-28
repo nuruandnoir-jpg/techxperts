@@ -823,16 +823,13 @@ input:focus, textarea:focus, select:focus { border-color: var(--p400); outline: 
   .xpert *, .seat.drop, .team-list li.joined, .team-list li.open-spot .avatar, .xp-poke, .xp-bubble { animation: none !important; transition: none !important; }
 }
 
-/* Pricing, night edition: a deep purple band with soft glows and a faint dot grid.
+/* Pricing, night edition: a deep purple band with soft glows.
    Plans are glass cards; the most popular plan is inverted (light on dark) so it glows. */
 .pricing-band { position: relative; isolation: isolate; padding-block: 88px 96px; color: #f3e8ff;
   background:
     radial-gradient(560px 360px at 12% 8%, rgb(90 24 154 / 55%), transparent 70%),
     radial-gradient(640px 420px at 92% 88%, rgb(123 44 191 / 40%), transparent 70%),
     linear-gradient(180deg, #10002b, #1a0038 60%, #10002b); }
-.pricing-band::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-  background-image: radial-gradient(rgb(224 170 255 / 16%) 1px, transparent 1.4px); background-size: 24px 24px;
-  -webkit-mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%); mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%); }
 .pricing-head { text-align: center; margin-bottom: 36px; }
 .pricing-kicker { margin: 0 0 6px; font-size: .75rem; font-weight: 700; letter-spacing: .24em; text-transform: uppercase; color: var(--p300); }
 .section.pricing-band h2 { color: #fff; margin: 0; font-size: clamp(2.2rem, 4vw, 3rem); }
@@ -971,21 +968,6 @@ input:focus, textarea:focus, select:focus { border-color: var(--p400); outline: 
   background: linear-gradient(90deg, rgb(16 0 43 / 80%) 0%, rgb(16 0 43 / 45%) 55%, rgb(60 9 108 / 25%) 100%); }
 @media (max-width: 640px) { .seo-hero.seo-hero-fs { background: var(--p900); } .seo-hero-fs::before { background: rgb(16 0 43 / 62%); } }
 
-/* Signature brand pattern: code brackets, braces, sparkles and the X, tiled very faintly.
-   pattern-on-dark.svg is for purple/dark surfaces, pattern-on-light.svg for light ones. */
-:root { --pattern-dark: url('/images/pattern-on-dark.svg'); --pattern-light: url('/images/pattern-on-light.svg'); }
-.footer { background: var(--pattern-dark) 0 0 / 200px, var(--p900); }
-[data-theme="dark"] .footer { background: var(--pattern-dark) 0 0 / 200px, #0a0020; }
-.cta { background: var(--pattern-dark) 0 0 / 200px, radial-gradient(600px 320px at 85% 120%, rgb(157 78 221 / 55%), transparent 70%), radial-gradient(500px 260px at 0% -20%, rgb(90 24 154 / 50%), transparent 70%), var(--p900); }
-.seo-band { background: var(--pattern-dark) 0 0 / 200px, var(--p900); }
-.xp-party { background: var(--pattern-dark) 0 0 / 200px, linear-gradient(135deg, var(--p900), var(--p700)); }
-.pricing-band::before { background-image: var(--pattern-dark); background-size: 200px; }
-/* Light surfaces: the pattern fades out from the middle so text stays clean */
-.how-line { position: relative; isolation: isolate; }
-.how-line::before, .xp-sleepy::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: var(--pattern-light) 0 0 / 200px;
-  -webkit-mask-image: radial-gradient(ellipse at center, transparent 20%, #000 75%); mask-image: radial-gradient(ellipse at center, transparent 20%, #000 75%); }
-.xp-sleepy { position: relative; isolation: isolate; overflow: hidden; }
-[data-theme="dark"] .how-line::before, [data-theme="dark"] .xp-sleepy::before { background-image: var(--pattern-dark); }
 
 /* Contact email in the menu bar: the full address on wide screens and when the links fold
    into the menu, just the envelope in between; on phones it lives in the menu drawer. */

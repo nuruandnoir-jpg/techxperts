@@ -1,13 +1,13 @@
-// Xpert, the brand mascot: a little person typing away behind a laptop, as a live SVG.
+// Xpert, the brand mascot: a little character typing away behind a laptop, as a live SVG.
 // Everything is drawn once and CSS shows the state that matches data-mood:
 //   look   - typing calmly, eyes on the screen
 //   typing - typing fast, little bits of code floating up
 //   wave   - one hand up, waving hello
 //   think  - hands still, eyes up, thought bubbles
-//   party  - both hands up, sparkles and a heart
+//   party  - both hands up, with sparkles
 //   closed - ducked down behind the laptop (peekaboo)
 //   sleepy - head resting on the laptop, Zzz
-// The lid faces us (its back, with stickers), so the person's face peeks over it.
+// The lid faces us (its back, with a glowing </> mark), so the character's face peeks over it.
 // See "Xpert, the brand mascot" in styles.css. The static logo is /mascot.svg.
 
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -41,13 +41,10 @@ export function xpert(mood = 'look', { size = 96, cls = '' } = {}) {
       <circle cx="20.4" cy="15.2" r="1.1" fill="#9a5e38"/><circle cx="43.6" cy="15.2" r="1.1" fill="#9a5e38"/>
       <circle cx="32" cy="14" r="12" fill="url(#${id}-skin)"/>
       <ellipse cx="32" cy="23.4" rx="7.6" ry="3.2" fill="#e0aaff" opacity=".28"/>
-      <circle cx="32" cy="-1.6" r="4.7" fill="${INK}"/>
-      <path d="M29.6-4.4q1.8-1.6 4-1" stroke="#7b2cbf" stroke-width="1.1" fill="none" stroke-linecap="round" opacity=".9"/>
-      <path d="M20 14.5q0-12.5 12-12.5t12 12.5q-3.5-6.5-12-6.8-8.5.3-12 6.8z" fill="${INK}"/>
-      <path d="M25.4 7.6q4.2 5.4 11.4 2.8-4.6-.3-7-4.4z" fill="${INK}"/>
-      <path d="M24.2 6.2q3-3.2 7.4-3.6" stroke="#7b2cbf" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".9"/>
-      <ellipse cx="32" cy="2.4" rx="3.6" ry="1.15" fill="#e0aaff"/>
-      <ellipse cx="24.2" cy="19.2" rx="2.4" ry="1.35" fill="#ff8fb1" opacity=".5"/><ellipse cx="39.8" cy="19.2" rx="2.4" ry="1.35" fill="#ff8fb1" opacity=".5"/>
+      <path d="M19.4 15.4q-1.4-14.4 12.6-14.6 14 .2 12.6 14.6-1.6-4.6-4.6-6.4-.8 2.2-3.4 2.6.6-1.8-.4-3.4-2.6 3-7.6 3.2 1.4-1.4 1.6-3.2-3.8 1.2-6.4 4.4-2.2 1-4.4 2.8z" fill="${INK}"/>
+      <path d="M31.4 1.2q-1.6-3.8 1.8-5.6-.2 2.4 2 3.4" stroke="${INK}" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <path d="M24.4 5.6q3.4-3 8.4-3.2" stroke="#7b2cbf" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".9"/>
+      <ellipse cx="24.2" cy="19.2" rx="2.3" ry="1.2" fill="#f2946e" opacity=".28"/><ellipse cx="39.8" cy="19.2" rx="2.3" ry="1.2" fill="#f2946e" opacity=".28"/>
       <g class="xp-face xp-eyes">
         <ellipse cx="27.5" cy="15.6" rx="1.75" ry="2" fill="${INK}"/><ellipse cx="36.5" cy="15.6" rx="1.75" ry="2" fill="${INK}"/>
         <circle cx="28.1" cy="14.9" r=".62" fill="#fff"/><circle cx="37.1" cy="14.9" r=".62" fill="#fff"/>
@@ -66,10 +63,7 @@ export function xpert(mood = 'look', { size = 96, cls = '' } = {}) {
       <rect x="11" y="23" width="42" height="27.5" rx="6" fill="url(#${id}-lid)"/>
       <g clip-path="url(#${id}-lidclip)"><path d="M11 23h17L15 50.5h-4z" fill="#fff" opacity=".09"/></g>
       <rect x="11.6" y="23.6" width="40.8" height="26.3" rx="5.4" fill="none" stroke="#e9c8ff" stroke-width=".7" opacity=".45"/>
-      <path d="M32 44.8s-3.7-2.3-3.7-4.7a1.95 1.95 0 0 1 3.7-1 1.95 1.95 0 0 1 3.7 1c0 2.4-3.7 4.7-3.7 4.7z" fill="#ffd6ec"/>
-      <path d="M18.5 28.5l1 2.1 2.3.4-1.7 1.6.4 2.3-2-1.1-2 1.1.4-2.3-1.7-1.6 2.3-.4z" fill="#fff" opacity=".92"/>
-      <g transform="translate(45.5 31)"><circle r="3.3" fill="#10002b"/><path d="M-1.3-1.3l2.6 2.6m0-2.6-2.6 2.6" stroke="#e0aaff" stroke-width="1.1" stroke-linecap="round"/></g>
-      <circle cx="44" cy="44" r="1" fill="#e0aaff" opacity=".7"/><circle cx="20" cy="43" r=".8" fill="#e0aaff" opacity=".6"/>
+      <path d="M27.6 33.4l-3.6 3.6 3.6 3.6M36.4 33.4l3.6 3.6-3.6 3.6M33.6 31.8l-3.2 10.4" stroke="#f3e1ff" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>
     </g>
   </g>
   <g class="xp-hands">${hand('l', 12.5)}${hand('r', 51.5)}
@@ -86,7 +80,6 @@ export function xpert(mood = 'look', { size = 96, cls = '' } = {}) {
   <g class="xp-extra xp-spark" fill="#c77dff">
     <path d="M2 4l1.5 3.5L7 9 3.5 10.5 2 14 .5 10.5-3 9 .5 7.5z"/>
     <path d="M64 6l1.2 2.8L68 10l-2.8 1.2L64 14l-1.2-2.8L60 10l2.8-1.2z"/>
-    <path d="M14-.5s-3-1.8-3-3.8a1.6 1.6 0 0 1 3-.8 1.6 1.6 0 0 1 3 .8c0 2-3 3.8-3 3.8z" fill="#ff9fb8"/>
   </g>
 </svg>`;
 }
