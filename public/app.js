@@ -497,7 +497,7 @@ async function viewHome() {
         <div class="finder">
           <div class="finder-xpert">
             <span class="xp-bubble" id="hero-bubble">Hi, I'm Xpert!</span>
-            <button type="button" class="xp-poke" id="hero-xpert" aria-label="Say hi to Xpert">${xpert('closed', { size: 88 })}</button>
+            <button type="button" class="xp-poke" id="hero-xpert" aria-label="Say hi to Xpert">${xpert('closed', { size: 104 })}</button>
           </div>
           <div class="finder-tabs" role="tablist" data-active="hire">
             <button type="button" role="tab" aria-selected="true" class="on" data-finder="hire">${icon('briefcase', { size: 18 })}Hire a team</button>
