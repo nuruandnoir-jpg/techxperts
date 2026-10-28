@@ -770,7 +770,7 @@ input:focus, textarea:focus, select:focus { border-color: var(--p400); outline: 
 
 /* Hero: Xpert sits on the top edge of the finder */
 .finder { position: relative; }
-.finder-xpert { position: absolute; right: 22px; bottom: 100%; margin-bottom: -17px; display: flex; align-items: center; gap: 6px; z-index: 2; pointer-events: none; }
+.finder-xpert { position: absolute; right: 22px; bottom: 100%; margin-bottom: -14px; display: flex; align-items: center; gap: 6px; z-index: 2; pointer-events: none; }
 .xp-poke { pointer-events: auto; border: 0; padding: 0; background: none; cursor: pointer; border-radius: 16px; filter: drop-shadow(0 10px 14px rgb(10 0 30 / 35%)); transition: transform .2s; }
 .xp-poke:hover { transform: translateY(-3px) rotate(-3deg); }
 .xp-poke:focus-visible { outline: 3px solid var(--p200); outline-offset: 2px; }
@@ -780,7 +780,7 @@ input:focus, textarea:focus, select:focus { border-color: var(--p400); outline: 
 .hero .finder { margin-top: 64px; }
 @media (max-width: 520px) {
   .finder-xpert { right: 14px; margin-bottom: -11px; }
-  .finder-xpert .xpert { width: 80px; height: 78px; }
+  .finder-xpert .xpert { width: 68px; height: 66px; }
   .xp-bubble { font-size: .8rem; padding: 7px 11px; margin-bottom: 20px; }
 }
 

@@ -94,9 +94,9 @@ const dueLabel = (iso) => {
 };
 const teamLabel = (r) => `${r.team.length} of ${r.teamSize} developer${r.teamSize > 1 ? 's' : ''}`;
 const onTeam = (r, user) => r.team.some((d) => d.id === user.id);
-const loading = () => { app.innerHTML = `<div class="empty xp-loading" role="status">${xpert('think', { size: 84 })}<p>Xpert is thinking…</p></div>`; };
+const loading = () => { app.innerHTML = `<div class="empty xp-loading" role="status">${xpert('think', { size: 72 })}<p>Xpert is thinking…</p></div>`; };
 // Xpert dozing off: used for "not found" and "can't reach the server".
-const sleepy = (title, body) => `<div class="narrow card empty xp-sleepy">${xpert('sleepy', { size: 120 })}<h2>${title}</h2>${body}</div>`;
+const sleepy = (title, body) => `<div class="narrow card empty xp-sleepy">${xpert('sleepy', { size: 100 })}<h2>${title}</h2>${body}</div>`;
 const errorBox = (msg) => `<div class="error" role="alert">${esc(msg)}</div>`;
 
 function devCard(d) {
@@ -497,7 +497,7 @@ async function viewHome() {
         <div class="finder">
           <div class="finder-xpert">
             <span class="xp-bubble" id="hero-bubble">Hi, I'm Xpert!</span>
-            <button type="button" class="xp-poke" id="hero-xpert" aria-label="Say hi to Xpert">${xpert('closed', { size: 104 })}</button>
+            <button type="button" class="xp-poke" id="hero-xpert" aria-label="Say hi to Xpert">${xpert('closed', { size: 84 })}</button>
           </div>
           <div class="finder-tabs" role="tablist" data-active="hire">
             <button type="button" role="tab" aria-selected="true" class="on" data-finder="hire">${icon('briefcase', { size: 18 })}Hire a team</button>
@@ -903,7 +903,7 @@ function viewNewRequest() {
   app.innerHTML = `
     <div class="narrow" style="max-width:760px">
       <div class="page-head xp-greet">
-        ${xpert('closed', { size: 84 })}
+        ${xpert('closed', { size: 72 })}
         <div><h1>Build your team</h1><p class="xp-say" id="xp-say" aria-live="polite">Hi! Tell me what you're building and I'll scope it for you.</p></div>
       </div>
       <form class="card" id="req-form">
@@ -1021,7 +1021,7 @@ async function viewRequest(id) {
     <p><a class="back-link" href="#/dashboard">${icon('arrow-left', { size: 16 })} Dashboard</a></p>
     ${celebrate ? `
       <div class="card xp-party" role="status">
-        ${xpert('party', { size: 92 })}
+        ${xpert('party', { size: 80 })}
         <div><h2>Your job is live!</h2><p class="muted">${r.teamSize > 1 ? `Now let's fill your ${r.teamSize} seats. Add matched developers below, or let them join from the job board.` : "Now let's find your developer. Add a match below, or let one join from the job board."}</p></div>
       </div>` : ''}
     <div class="split">
