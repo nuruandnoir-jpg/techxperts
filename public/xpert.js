@@ -1,4 +1,4 @@
-// Xpert, the brand mascot: a little character typing away behind a laptop, as a live SVG.
+// Xpert, the brand mascot: an emoji-style character typing away behind a laptop, as a live SVG.
 // Everything is drawn once and CSS shows the state that matches data-mood:
 //   look   - typing calmly, eyes on the screen
 //   typing - typing fast, little bits of code floating up
@@ -15,8 +15,7 @@ let uid = 0;
 
 export function xpert(mood = 'look', { size = 96, cls = '' } = {}) {
   const id = `xp${++uid}`;
-  const SKIN = '#b9784e';
-  const INK = '#240046';
+  const INK = '#5b3a10'; // emoji-style warm brown for eyes and mouth
   const hand = (side, cx) => `
     <g class="xp-hand xp-hand-${side}">
       <ellipse cx="${cx}" cy="51.6" rx="3.9" ry="2.5" fill="#9d4edd"/>
@@ -28,7 +27,7 @@ export function xpert(mood = 'look', { size = 96, cls = '' } = {}) {
   <defs>
     <linearGradient id="${id}-lid" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b06cec"/><stop offset=".55" stop-color="#8f3fd6"/><stop offset="1" stop-color="#7024b8"/></linearGradient>
     <linearGradient id="${id}-hood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d49bff"/><stop offset="1" stop-color="#a45be8"/></linearGradient>
-    <radialGradient id="${id}-skin" cx=".38" cy=".32" r=".75"><stop offset="0" stop-color="#d0936a"/><stop offset="1" stop-color="${SKIN}"/></radialGradient>
+    <radialGradient id="${id}-skin" cx=".4" cy=".34" r=".72"><stop offset="0" stop-color="#fff1a6"/><stop offset=".45" stop-color="#ffd84a"/><stop offset=".85" stop-color="#ffbf2f"/><stop offset="1" stop-color="#f2a516"/></radialGradient>
     <radialGradient id="${id}-shadow"><stop offset="0" stop-color="#3c096c" stop-opacity=".28"/><stop offset="1" stop-color="#3c096c" stop-opacity="0"/></radialGradient>
     <clipPath id="${id}-lidclip"><rect x="11" y="23" width="42" height="27.5" rx="6"/></clipPath>
   </defs>
@@ -37,23 +36,18 @@ export function xpert(mood = 'look', { size = 96, cls = '' } = {}) {
     <path d="M7 54q0-25 25-26 25 1 25 26z" fill="url(#${id}-hood)"/>
     <path d="M10.5 44q2-11 12-14.5" stroke="#fff" stroke-width="1.4" opacity=".25" fill="none" stroke-linecap="round"/>
     <g class="xp-head">
-      <circle cx="20.2" cy="15" r="2.6" fill="${SKIN}"/><circle cx="43.8" cy="15" r="2.6" fill="${SKIN}"/>
-      <circle cx="20.4" cy="15.2" r="1.1" fill="#9a5e38"/><circle cx="43.6" cy="15.2" r="1.1" fill="#9a5e38"/>
-      <circle cx="32" cy="14" r="12" fill="url(#${id}-skin)"/>
-      <ellipse cx="32" cy="23.4" rx="7.6" ry="3.2" fill="#e0aaff" opacity=".28"/>
-      <path d="M19.4 15.4q-1.4-14.4 12.6-14.6 14 .2 12.6 14.6-1.6-4.6-4.6-6.4-.8 2.2-3.4 2.6.6-1.8-.4-3.4-2.6 3-7.6 3.2 1.4-1.4 1.6-3.2-3.8 1.2-6.4 4.4-2.2 1-4.4 2.8z" fill="${INK}"/>
-      <path d="M31.4 1.2q-1.6-3.8 1.8-5.6-.2 2.4 2 3.4" stroke="${INK}" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-      <path d="M24.4 5.6q3.4-3 8.4-3.2" stroke="#7b2cbf" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".9"/>
-      <ellipse cx="24.2" cy="19.2" rx="2.3" ry="1.2" fill="#f2946e" opacity=".28"/><ellipse cx="39.8" cy="19.2" rx="2.3" ry="1.2" fill="#f2946e" opacity=".28"/>
+      <circle cx="32" cy="12.5" r="13" fill="url(#${id}-skin)"/>
+      <ellipse cx="25.4" cy="4.2" rx="4.6" ry="2.3" fill="#fff" opacity=".5" transform="rotate(-24 25.4 4.2)"/>
+      <ellipse cx="23.2" cy="16.8" rx="2.6" ry="1.5" fill="#ff8a5c" opacity=".35"/><ellipse cx="40.8" cy="16.8" rx="2.6" ry="1.5" fill="#ff8a5c" opacity=".35"/>
       <g class="xp-face xp-eyes">
-        <ellipse cx="27.5" cy="15.6" rx="1.75" ry="2" fill="${INK}"/><ellipse cx="36.5" cy="15.6" rx="1.75" ry="2" fill="${INK}"/>
-        <circle cx="28.1" cy="14.9" r=".62" fill="#fff"/><circle cx="37.1" cy="14.9" r=".62" fill="#fff"/>
+        <ellipse cx="27.2" cy="11.6" rx="2.1" ry="2.9" fill="${INK}"/><ellipse cx="36.8" cy="11.6" rx="2.1" ry="2.9" fill="${INK}"/>
+        <circle cx="27.9" cy="10.4" r=".8" fill="#fff"/><circle cx="37.5" cy="10.4" r=".8" fill="#fff"/>
       </g>
-      <path class="xp-face xp-happy" d="M25.6 16.2q1.9-2.5 3.8 0M34.6 16.2q1.9-2.5 3.8 0" stroke="${INK}" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-      <path class="xp-face xp-shut" d="M25.6 15.6q1.9 1.5 3.8 0M34.6 15.6q1.9 1.5 3.8 0" stroke="${INK}" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-      <path class="xp-face xp-smile" d="M30.3 20.3q1.7 1.5 3.4 0" stroke="${INK}" stroke-width="1.35" fill="none" stroke-linecap="round"/>
-      <path class="xp-face xp-grin" d="M29.7 19.7h4.6a2.3 2.3 0 0 1-4.6 0z" fill="${INK}"/>
-      <circle class="xp-face xp-o" cx="32" cy="20.6" r="1.05" fill="${INK}"/>
+      <path class="xp-face xp-happy" d="M24.8 12.6q2.4-3.2 4.8 0M34.4 12.6q2.4-3.2 4.8 0" stroke="${INK}" stroke-width="1.9" fill="none" stroke-linecap="round"/>
+      <path class="xp-face xp-shut" d="M24.8 12q2.4 1.9 4.8 0M34.4 12q2.4 1.9 4.8 0" stroke="${INK}" stroke-width="1.9" fill="none" stroke-linecap="round"/>
+      <path class="xp-face xp-smile" d="M27.4 17q4.6 4 9.2 0" stroke="${INK}" stroke-width="1.9" fill="none" stroke-linecap="round"/>
+      <g class="xp-face xp-grin"><path d="M26.8 16.4h10.4a5.2 5.2 0 0 1-10.4 0z" fill="${INK}"/><path d="M29.4 20.6a2.6 1.6 0 0 1 5.2 0 5.2 5.2 0 0 1-5.2 0z" fill="#ff7a8a"/></g>
+      <ellipse class="xp-face xp-o" cx="32" cy="18.6" rx="1.5" ry="1.8" fill="${INK}"/>
     </g>
   </g>
   <g class="xp-laptop">
