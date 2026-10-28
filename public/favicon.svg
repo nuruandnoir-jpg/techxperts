@@ -1,23 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <!-- "Xpert", the Tech and AI Xperts mascot: a calm, content laptop -->
+  <!-- "Xpert", the Tech and AI Xperts laptop -->
   <defs>
-    <linearGradient id="xp-lid" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#9d4edd"/>
-      <stop offset="1" stop-color="#7b2cbf"/>
-    </linearGradient>
-    <linearGradient id="xp-screen" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffffff"/>
-      <stop offset="1" stop-color="#f1e2ff"/>
-    </linearGradient>
+    <linearGradient id="l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a95ee6"/><stop offset="1" stop-color="#7b2cbf"/></linearGradient>
+    <linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#f1e2ff"/></linearGradient>
+    <linearGradient id="d" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9d4edd"/><stop offset="1" stop-color="#7b2cbf"/></linearGradient>
   </defs>
-  <g transform="translate(0 5)">
-  <rect x="10" y="9" width="44" height="34" rx="9" fill="url(#xp-lid)"/>
-  <rect x="14.5" y="13.5" width="35" height="25" rx="5.5" fill="url(#xp-screen)"/>
-  <path d="M22.5 25q3 3 6 0M35.5 25q3 3 6 0" stroke="#3c096c" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-  <path d="M29.5 31q2.5 2 5 0" stroke="#3c096c" stroke-width="2" fill="none" stroke-linecap="round"/>
-  <ellipse cx="20.5" cy="30" rx="2.6" ry="1.6" fill="#e0aaff"/>
-  <ellipse cx="43.5" cy="30" rx="2.6" ry="1.6" fill="#e0aaff"/>
-  <path d="M5 45.5a2.5 2.5 0 0 1 2.5-2.5h49a2.5 2.5 0 0 1 2.5 2.5v0a5 5 0 0 1-5 5H10a5 5 0 0 1-5-5z" fill="#5a189a"/>
-  <rect x="27" y="43" width="10" height="2" rx="1" fill="#c77dff"/>
+  <path d="M9.5 40h45l5.5 11.5a2 2 0 0 1-1.8 2.9H5.8A2 2 0 0 1 4 51.5z" fill="url(#d)"/>
+  <g fill="#e0aaff" opacity=".55"><rect x="13" y="42.4" width="38" height="2" rx="1"/><rect x="11.6" y="45.4" width="40.8" height="2" rx="1"/></g>
+  <rect x="26" y="48.6" width="12" height="3.4" rx="1.2" fill="#e0aaff" opacity=".7"/>
+  <rect x="3.6" y="53.6" width="56.8" height="3.4" rx="1.7" fill="#5a189a"/>
+  <g class="lid">
+    <rect x="10" y="5" width="44" height="35" rx="8" fill="url(#l)"/>
+    <rect x="14" y="9" width="36" height="27" rx="5" fill="url(#s)"/>
+    <path d="M25.5 17.5l-4.5 4.5 4.5 4.5M38.5 17.5l4.5 4.5-4.5 4.5M34.5 15.5l-5 13" stroke="#7b2cbf" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M29 32.5h6" stroke="#c77dff" stroke-width="2.4" stroke-linecap="round"/>
   </g>
 </svg>

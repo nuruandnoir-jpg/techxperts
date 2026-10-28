@@ -715,37 +715,44 @@ input:focus, textarea:focus, select:focus { border-color: var(--p400); outline: 
 .cta .contact-line { color: #d9c4f2; opacity: 1; }
 .cta .contact-line a { color: #fff; text-decoration-color: var(--p300); }
 
-/* Xpert, the live mascot (public/xpert.js): CSS shows the face that matches data-mood */
+/* Xpert, the brand laptop (public/xpert.js). Closing folds the screen down to the hinge
+   (scaleY to 0 from y=40), then unfolds the lid's back over the keyboard deck. Opening runs
+   the same two steps in reverse; the delays below sequence them in each direction. */
 .xpert { display: block; overflow: visible; }
-.xpert .xp-face, .xpert .xp-hand { display: none; }
-.xpert[data-mood="look"] :is(.xp-open, .xp-smile),
-.xpert[data-mood="wave"] :is(.xp-open, .xp-smile, .xp-hand),
-.xpert[data-mood="think"] :is(.xp-open, .xp-o, .xp-dots),
-.xpert[data-mood="party"] :is(.xp-happy, .xp-grin, .xp-spark),
-.xpert[data-mood="sleepy"] :is(.xp-shut, .xp-o, .xp-zzz) { display: inline; }
-.xpert[data-mood="think"] .xp-pupils { transform: translate(1.6px, -1.6px); }
-.xpert .xp-pupils { transition: transform .18s ease-out; }
-.xpert .xp-eye { transform-box: fill-box; transform-origin: center; animation: xp-blink 5s infinite; }
-.xpert .xp-eye + .xp-eye { animation-delay: .02s; }
-.xpert .xp-hand { transform-box: view-box; transform-origin: 55px 40px; animation: xp-wave .8s ease-in-out infinite alternate; }
+.xpert .xp-lid-front, .xpert .xp-lid-back, .xpert .xp-body { transform-box: view-box; }
+.xpert .xp-lid-front { transform-origin: 32px 40px; transition: transform .26s cubic-bezier(.3, 1.35, .5, 1) .2s; }
+.xpert .xp-lid-back { transform-origin: 32px 40px; transform: scaleY(0); transition: transform .2s ease-in; }
+.xpert:is([data-mood="closed"], [data-mood="sleepy"]) .xp-lid-front { transform: scaleY(0); transition: transform .24s ease-in; }
+.xpert:is([data-mood="closed"], [data-mood="sleepy"]) .xp-lid-back { transform: scaleY(1); transition: transform .2s cubic-bezier(.3, 1.4, .5, 1) .24s; }
+.xpert .xp-scr, .xpert .xp-extra { display: none; }
+.xpert:is([data-mood="look"], [data-mood="wave"]) .xp-code,
+.xpert[data-mood="typing"] .xp-typing,
+.xpert[data-mood="think"] .xp-dots,
+.xpert[data-mood="party"] :is(.xp-heart, .xp-spark),
+.xpert[data-mood="sleepy"] .xp-zzz { display: inline; }
+.xpert .xp-caret { animation: xp-caret 1.1s steps(1) infinite; }
+.xpert .xp-typing path { transform-box: fill-box; transform-origin: left center; animation: xp-type 1.4s ease-out infinite; }
+.xpert .xp-typing path:nth-child(2) { animation-delay: .2s; }
+.xpert .xp-typing path:nth-child(3) { animation-delay: .4s; }
+.xpert .xp-typing path:nth-child(4) { animation-delay: .6s; }
 .xpert[data-mood="think"] .xp-body, .xp-loading .xpert .xp-body { animation: xp-bob 1.6s ease-in-out infinite; }
-.xpert[data-mood="think"] .xp-dots circle { animation: xp-dot 1.2s ease-in-out infinite; }
-.xpert[data-mood="think"] .xp-dots circle:nth-child(2) { animation-delay: .15s; }
-.xpert[data-mood="think"] .xp-dots circle:nth-child(3) { animation-delay: .3s; }
-.xpert[data-mood="party"] .xp-body { transform-box: view-box; transform-origin: 32px 56px; animation: xp-hop .5s ease-in-out 3; }
-.xpert[data-mood="party"] .xp-spark path { transform-box: fill-box; transform-origin: center; animation: xp-twinkle 1s ease-in-out infinite; }
-.xpert[data-mood="sleepy"] .xp-zzz text { animation: xp-z 2.4s ease-in-out infinite; }
-.xpert[data-mood="sleepy"] .xp-zzz text:nth-child(2) { animation-delay: .4s; }
-.xpert[data-mood="sleepy"] .xp-zzz text:nth-child(3) { animation-delay: .8s; }
-.xpert[data-mood="sleepy"] .xp-body { animation: xp-breathe 3.2s ease-in-out infinite; transform-box: view-box; transform-origin: 32px 56px; }
-@keyframes xp-blink { 0%, 93%, 100% { transform: scaleY(1); } 95.5% { transform: scaleY(.1); } }
-@keyframes xp-wave { from { transform: rotate(-14deg); } to { transform: rotate(16deg); } }
-@keyframes xp-bob { 0%, 100% { transform: translate(0, 5px); } 50% { transform: translate(0, 2px); } }
+.xpert .xp-dots circle { animation: xp-dot 1.2s ease-in-out infinite; }
+.xpert .xp-dots circle:nth-child(2) { animation-delay: .15s; }
+.xpert .xp-dots circle:nth-child(3) { animation-delay: .3s; }
+.xpert:is([data-mood="party"], [data-mood="wave"]) .xp-body { transform-origin: 32px 56px; animation: xp-hop .5s ease-in-out 2; }
+.xpert .xp-heart path:first-child { transform-box: fill-box; transform-origin: center; animation: xp-beat 1s ease-in-out infinite; }
+.xpert .xp-spark path { transform-box: fill-box; transform-origin: center; animation: xp-twinkle 1s ease-in-out infinite; }
+.xpert .xp-zzz text { animation: xp-z 2.4s ease-in-out infinite; }
+.xpert .xp-zzz text:nth-child(2) { animation-delay: .4s; }
+.xpert .xp-zzz text:nth-child(3) { animation-delay: .8s; }
+@keyframes xp-caret { 50% { opacity: 0; } }
+@keyframes xp-type { 0% { transform: scaleX(0); } 45%, 100% { transform: scaleX(1); } }
+@keyframes xp-bob { 0%, 100% { transform: none; } 50% { transform: translateY(-2px); } }
 @keyframes xp-dot { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
-@keyframes xp-hop { 0%, 100% { transform: translate(0, 5px); } 50% { transform: translate(0, -1px) rotate(-3deg); } }
+@keyframes xp-hop { 0%, 100% { transform: none; } 50% { transform: translateY(-4px) rotate(-2deg); } }
+@keyframes xp-beat { 0%, 100% { transform: scale(1); } 30% { transform: scale(1.14); } 60% { transform: scale(.96); } }
 @keyframes xp-twinkle { 0%, 100% { transform: scale(.6); opacity: .5; } 50% { transform: scale(1.15); opacity: 1; } }
 @keyframes xp-z { 0% { opacity: 0; transform: translate(0, 4px); } 40% { opacity: 1; } 100% { opacity: 0; transform: translate(3px, -6px); } }
-@keyframes xp-breathe { 0%, 100% { transform: translate(0, 5px) scale(1); } 50% { transform: translate(0, 5px) scale(1.02, .98); } }
 
 /* Hero: Xpert sits on the top edge of the finder */
 .finder { position: relative; }

@@ -1,6 +1,6 @@
 // Tech and AI Xperts single-page app: hash routing, a tiny API client and view renderers.
 import { icon } from './icons.js';
-import { xpert, setMood, lookAt, confetti } from './xpert.js';
+import { xpert, setMood, blink, confetti } from './xpert.js';
 
 const app = document.getElementById('app');
 const nav = document.getElementById('nav');
@@ -497,7 +497,7 @@ async function viewHome() {
         <div class="finder">
           <div class="finder-xpert">
             <span class="xp-bubble" id="hero-bubble">Hi, I'm Xpert!</span>
-            <button type="button" class="xp-poke" id="hero-xpert" aria-label="Say hi to Xpert">${xpert('wave', { size: 88, follow: true })}</button>
+            <button type="button" class="xp-poke" id="hero-xpert" aria-label="Say hi to Xpert">${xpert('closed', { size: 88 })}</button>
           </div>
           <div class="finder-tabs" role="tablist" data-active="hire">
             <button type="button" role="tab" aria-selected="true" class="on" data-finder="hire">${icon('briefcase', { size: 18 })}Hire a team</button>
@@ -601,8 +601,8 @@ async function viewHome() {
   bindHowTrack();
 }
 
-// Xpert in the hero: waves hello, then watches the pointer. It looks at the field while
-// someone types, smiles at a long enough idea, and waves again when poked.
+// Xpert in the hero: the laptop opens to say hello, types along while someone describes
+// their idea, shows a heart once the idea is long enough, and blinks its lid when poked.
 function bindHeroXpert() {
   const poke = document.getElementById('hero-xpert');
   const svg = poke.querySelector('.xpert');
@@ -614,17 +614,27 @@ function bindHeroXpert() {
     clearTimeout(say.t);
     say.t = setTimeout(() => bubble.classList.remove('show'), ms);
   };
-  setTimeout(() => { setMood(svg, 'look'); }, 1800);
-  setTimeout(() => say("Hi, I'm Xpert!"), 500);
+  setTimeout(() => setMood(svg, 'wave', 1400, 'look'), 400);
+  setTimeout(() => say("Hi, I'm Xpert!"), 700);
   poke.addEventListener('click', () => {
-    setMood(svg, 'wave', 1600);
+    blink(svg, 'wave');
     say(['Need a team? I can help.', 'Tell me what to build!', 'Every expert is interviewed.'][Math.floor(Math.random() * 3)]);
   });
+  let liked = false;
+  let idle;
   input.addEventListener('input', () => {
-    lookAt(svg, input);
-    if (input.value.trim().length >= 15 && svg.dataset.mood !== 'party') { setMood(svg, 'party', 1400); say('Ooh, I like it!', 1800); }
+    const long = input.value.trim().length >= 15;
+    if (long && !liked) {
+      liked = true;
+      setMood(svg, 'party');
+      say('Ooh, I like it!', 1800);
+    } else if (!liked || !long) {
+      liked = long;
+      setMood(svg, 'typing');
+    }
+    clearTimeout(idle);
+    idle = setTimeout(() => setMood(svg, 'look'), 1600);
   });
-  input.addEventListener('focus', () => lookAt(svg, input));
 }
 
 async function viewDevelopers(params) {
@@ -893,7 +903,7 @@ function viewNewRequest() {
   app.innerHTML = `
     <div class="narrow" style="max-width:760px">
       <div class="page-head xp-greet">
-        ${xpert('wave', { size: 84, follow: true })}
+        ${xpert('closed', { size: 84 })}
         <div><h1>Build your team</h1><p class="xp-say" id="xp-say" aria-live="polite">Hi! Tell me what you're building and I'll scope it for you.</p></div>
       </div>
       <form class="card" id="req-form">
@@ -928,7 +938,7 @@ function viewNewRequest() {
   const scopeBtn = document.getElementById('scope-btn');
   const helper = app.querySelector('.xp-greet .xpert');
   const say = (text) => { document.getElementById('xp-say').textContent = text; };
-  setTimeout(() => { if (helper.dataset.mood === 'wave') setMood(helper, 'look'); }, 2200);
+  setTimeout(() => setMood(helper, 'wave', 1400, 'look'), 300);
   form.querySelectorAll('.chip').forEach((chip) => chip.addEventListener('click', () => { form.description.value = chip.dataset.text; form.description.focus(); }));
 
   async function runScope() {
@@ -951,7 +961,7 @@ function viewNewRequest() {
         <div class="ai-box"><strong>${icon('sparkles', { size: 16 })} AI brief</strong> <span class="hint">(${scope.source === 'claude' ? 'by Claude' : 'quick estimate'})</span>
           <p style="margin:6px 0 0">${esc(scope.summary)}</p>
           <p class="hint" style="margin:6px 0 0">We filled in the details below — adjust anything before posting.</p></div>`;
-      setMood(helper, 'party', 2200);
+      setMood(helper, 'party', 2200, 'look');
       say('Done! I filled in the details below. Change anything you like.');
     } catch (err) { setMood(helper, 'look'); say("Sorry, I couldn't scope that. Try again in a moment."); toast(err.message); }
     scopeBtn.disabled = false;
